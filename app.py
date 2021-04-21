@@ -15,16 +15,17 @@ from flask import Flask, request, jsonify, session, send_file, redirect, render_
 from flask_cors import CORS
 from flask_session import Session 
 
-from utils import *
+from utils import get_s3_file, query_ncbi, slice_matrix, associate_drugs
 
-app = Flask(__name__)
+base_name = os.environ.get('BASE_NAME', '/drugshot')
+
+app = Flask(__name__, static_url_path=f"/{base_name}/static")
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 print("server started")
 
-base_name = os.environ.get('BASE_NAME', 'drugshot')
 cors = CORS(app, resources={r"/"+base_name+"/*": {"origins": "*"}})
 
 print("init DrugRIF")
@@ -40,19 +41,15 @@ print("init similarities")
 get_s3_file("drugrif_cooccur")
 get_s3_file("L1000_coexpression")
 
-@app.route('/'+base_name+'/')
+@app.route(base_name+'/')
 def index():
     return render_template('index.html')
 
-@app.route('/'+base_name)
-def redirect_index():
-    return redirect('/'+base_name+'/')
-
-@app.route('/'+base_name+'/<path:template>')
+@app.route(base_name+'/<path:template>')
 def send_template(template):
     return render_template(template)
 
-@app.route('/'+base_name+'/api/search', methods=["POST", "GET"])
+@app.route(base_name+'/api/search', methods=["POST", "GET"])
 def search():
     if request.method == 'GET':
         input_json = {"term": request.args.get("term")}
@@ -64,7 +61,7 @@ def search():
     stime = time.time()
 
     if searchterm not in session:
-        query_geo(searchterm, session)
+        query_ncbi(searchterm, session)
 
     associated_drug_counts = drugrif.loc[set(drugrif.index).intersection(set(session[searchterm]))]
 
@@ -84,7 +81,7 @@ def search():
                 }
     return jsonify(response)
 
-@app.route('/'+base_name+'/api/associate', methods=["POST", "GET"])
+@app.route(base_name+'/api/associate', methods=["POST", "GET"])
 def associate():
     if request.method == 'GET':
         input_json = {"drug_list": request.args.get("drug_list").split(","),
@@ -105,7 +102,7 @@ def associate():
 
     return jsonify(response)
 
-@app.route('/'+base_name+'/api/drugpublicationcount', methods=["POST", "GET"])
+@app.route(base_name+'/api/drugpublicationcount', methods=["POST", "GET"])
 def drugpublicationcount():
     if request.method == 'GET':
         input_json = {"drugs": request.args.get("drugs")}
@@ -122,7 +119,7 @@ def drugpublicationcount():
     response = {"drugcount": drugcounts}
     return jsonify(response)
 
-@app.route('/'+'/api/drugpublications', methods = ["POST","GET"])
+@app.route(base_name+'/api/drugpublications', methods = ["POST","GET"])
 def drugpublications():
     if request.method == 'GET':
         input_json = {"drug": request.args.get("drug"), "term": request.args.get("term")}
@@ -133,7 +130,7 @@ def drugpublications():
     search_term = input_json["term"]
 
     if search_term not in session:
-        query_geo(search_term, session)
+        query_ncbi(search_term, session)
 
     pmids = session[search_term]
     

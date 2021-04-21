@@ -14,7 +14,7 @@ def get_s3_file(filename):
         urllib.request.urlretrieve(url, f'similarity/{filename}.h5')
 
 
-def query_geo(searchterm, session):
+def query_ncbi(searchterm, session):
     countMax = 1000000
     pagestep = 1000000
     going = True
@@ -45,13 +45,13 @@ def query_geo(searchterm, session):
 
 def slice_matrix(matrix, query_colids):
     f = h5.File(f"similarity/{matrix}.h5", "r")
+    query_colids = set(query_colids)
     colids = list(f["meta"]["colid"])
     try:
         colids = [x.decode("UTF-8") for x in colids]
     except:
         print("already good")
-    intersect_colids = list(set(query_colids).intersection(set(colids)))
-    col_idx = np.array(sorted([colids.index(x) for x in intersect_colids])).astype(np.int64)
+    col_idx = [i for i, x in enumerate(colids) if x in query_colids]
     values = pd.DataFrame(f["data"]["matrix"][:, col_idx], columns=np.array(colids)[col_idx], index=colids, dtype=float)
     f.close()
     for g in values.columns:
