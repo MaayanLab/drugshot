@@ -1,0 +1,1162 @@
+{% extends "base.html" %}
+{% block title %}DrugShot-Query{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+    // Redirect to https 
+
+    if (location.protocol != 'https:') {
+        //location.href = 'https:' + window.location.href.substring(window.location.protocol.length);
+    }
+
+    var baseurl = "https://maayanlab.cloud/drugshot"
+
+    // Setup data
+    var activeDrug = "";
+    var nodeClicked = false;
+    var radius = 4;
+    var loading = false;
+
+    $(document).ready(function () {
+        $('.selectpicker').selectpicker({});
+
+        /////// Slider ///////
+        // With JQuery
+        $("#sliderFilter").slider();
+        $("#sliderFilter").css("width", "100%");
+        $("#sliderFilter").css("padding-left", "30px");
+
+        // Change text value with slider
+        $("#sliderFilter").on("slide slideStop", function (slideEvt) {
+            $("#sliderValue").val(slideEvt.value);
+
+            $("#topDrugFilter").val($("#sliderValue").val());
+            updateButton("#enrichcountRIF", $("#sliderValue").val());
+
+        });
+
+        $("#sliderFilter").on("slideStop", function (slideEvt) {
+            //filters_associated('#associatedDrugs_filter');
+
+            $("#topDrugFilter").val($("#sliderValue").val());
+            updateButton("#enrichcountRIF", $("#sliderValue").val());
+        });
+
+        // Change slider with text value
+        $("#sliderValue").change(function () {
+
+            $("#topDrugFilter").val($("#sliderValue").val());
+            updateButton("#enrichcountRIF", $("#sliderValue").val());
+
+            $('#sliderFilter').slider('setAttribute', 'value', $(this).val());
+            $('#sliderFilter').slider('refresh');
+        });
+
+        var form = document.getElementById('searchform');
+        if (form.attachEvent) {
+            form.attachEvent("submit", processForm);
+        } else {
+            form.addEventListener("submit", processForm);
+        }
+
+        $('[data-toggle="popover"]').popover();
+
+        var searchin = getUrlParameter('searchin');
+        var searchnot = getUrlParameter('searchnot');
+
+        var startSearch = false;
+
+        if (searchin) {
+            $('#searchinput').tagsinput('removeAll');
+            $('#searchinput').tagsinput('add', searchin);
+            startSearch = true;
+        }
+
+        if (searchnot) {
+            $('#searchinput_not').tagsinput('removeAll');
+            $('#searchinput_not').tagsinput('add', searchnot);
+            startSearch = true;
+        }
+
+        if (startSearch) {
+            loading = true;
+            var finalInput = getFinalInput();
+            loadData(finalInput);
+            $("#tables_div .loading-tab").show();
+        }
+
+        $('.filter_btn').click(function () {
+
+            var active = $(this).hasClass('active');
+            var parent = $(this).parent().attr("id");
+
+            var cont = $("#" + parent).parent().attr("id");
+
+            var res = $("#" + cont + " .tabledata").attr("id")
+            var tablestring = res.replace("_", "tabledata_")
+
+            if (res == "drugtable") {
+                tablestring = tablestring + "data";
+            }
+
+            var table = $('#' + tablestring).DataTable();
+            var alldrugs = getDrugs('#' + tablestring, 20000);
+        });
+    }); //End .ready()
+
+    function printTable(tableID, cols, header, filename) {
+        var columns = [];
+        rows = $(tableID).DataTable().rows().data().toArray();
+
+        var sbAll = [];
+
+        for (var i = 0; i < rows.length; i++) {
+            var sbRow = [];
+            for (var j = 0; j < cols.length; j++) {
+                if (rows[i][j].match("<a ")) {
+                    sbRow.push(rows[i][j].split(">")[1].split("<")[0]);
+
+                    if (rows[i][j].match("drugneighbors")) {
+                        sps = rows[i][j].split("drugtag\">");
+
+                        sbPreds = []
+                        for (var k = 2; k < sps.length; k++) {
+                            sbPreds.push(sps[k].split("<br")[0].replace("</div>", ":").replace("<br>|\n", ""));
+                        }
+
+                        predText = sbPreds.join(";").replace(/ /g, "");
+
+                        sbRow.push(predText);
+                    }
+                }
+                else {
+                    sbRow.push(rows[i][j]);
+                }
+            }
+            var rowText = sbRow.join("\t");
+            sbAll.push(rowText);
+        }
+
+        allText = sbAll.join("\n");
+
+        download(filename, header + allText);
+    }
+
+    function download(filename, text) {
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', filename);
+
+        element.style.display = 'none';
+        document.body.appendChild(element);
+
+        element.click();
+
+        document.body.removeChild(element);
+    }
+
+    function loadData(search) {
+        var dataset = [];
+
+        $("#sharingiscaring").hide();
+
+        $("#plotsDiv").show();
+        $("#plotDivContent").hide();
+        $("#tables_div").hide();
+        $("#plotsDiv .loading-tab").fadeIn();
+
+        $("#scatterplot").html("");
+        $("#cupcake").fadeIn();
+        $("#message").fadeOut();
+
+        $("#tab-plots").fadeOut();
+
+        var baseurl2 = "api/search";
+     
+        $("#cupcake").css("background-color", "#ff1ea1");
+        $(".cupcakeInner").css("background-color", "#ff1ea1");
+
+        payload = {"term": search }
+        console.log(payload)
+
+        var xhr = new XMLHttpRequest();
+        var url = baseurl2;
+        xhr.open("POST", url, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                var data = JSON.parse(xhr.responseText);
+
+                pubmedCount = data["pubmedID_count"];
+                searchTerm = data["search_term"];
+
+                $("#searchterm").html(searchTerm);
+                $("#pmidcount").html(pubmedCount);
+
+                var drugcount = data["drug_count"];
+                var canvas_width, canvas_height, padding, xScale, yScale, xAxis, yAxis, svg;
+
+                initialize_scatterPlot(drugcount);
+
+                $("#plotsDiv").show();
+                $("#plotDivContent").show();
+                $("#plotsDiv .loading-tab").hide();
+
+                $("#scatterplot").show();
+                $("#tables_div").show();
+
+                $("#plotDiv .loading-tab").hide();
+
+                dataset = [];
+
+                var maxval = 0;
+
+                addTable(data);
+
+                var topNumFilter = 20;
+                if (Number.isInteger($("#topDrugFilter").val())) {
+                    topNumFilter = $("#topDrugFilter").val();
+                }
+
+                var drugindex = 0;
+                searchstring = "";
+
+                for (var key in drugcount) {
+                    if (drugcount.hasOwnProperty(key)) {
+                        var temp = drugcount[key];
+                        temp[2] = key;
+                        dataset.push(temp);
+                    }
+                }
+
+                var activeDrugs = getPredictedDrugs('#drugtabledata', $("#sliderValue").val());
+
+
+                var sp = searchTerm.split(" NOT ")
+
+                var notstring = "";
+                for (var i = 1; i < sp.length - 1; i++) {
+                    notstring += sp[i] + " NOT ";
+                }
+                if (sp.length > 1) {
+                    notstring += sp[sp.length - 1];
+                }
+
+                $("#urltext").html(baseurl + "/index.html?searchin=" + sp[0] + "&searchnot=" + notstring);
+
+                $("#sharingiscaring").show();
+
+                getPrediction(activeDrugs);
+
+                // Modify Associated Drugs header:
+                $("#associatedDrugs_header").empty().append(
+                    "<div class=\"col-xs-12 col-sm-8 no-pad\"><span class=\"largeh\">Associated Drugs</span></div>" +
+                    "<h5 style='animation: fadeIn 1s;'>Query: " + searchTerm);
+
+                var topDrug = Object.keys(drugcount)[0];
+                refreshPlot(topDrug);
+                //highlightDrug(topDrug);
+
+                $("#tab-plots").fadeIn();
+
+            }
+        };
+        xhr.send(JSON.stringify(payload));
+
+    function initialize_scatterPlot(drugcount) {
+
+        var numDataPoints = Object.keys(drugcount).length //400;
+        for (var i = 0; i < numDataPoints; i++) {
+            dataset.push([1, 1]);  // Add new number to array
+        }
+
+        // Setup settings for graphic
+        canvas_width = 650;
+        canvas_height = 500;
+        padding = 105;  // for chart edges
+
+        // Create scale functions
+        xScale = d3.scale.linear()  // xScale is width of graphic
+            .domain([0, d3.max(dataset, function (d) {
+                return d[0];  // input domain
+            })])
+            .range([padding, canvas_width - padding * 1 + 40]); // output range
+
+        yScale = d3.scale.linear()  // yScale is height of graphic
+            .domain([0, d3.max(dataset, function (d) {
+                return d[1];  // input domain
+            })])
+            .range([canvas_height - padding, padding]);  // remember y starts on top going down so we flip
+
+        // Define X axis
+        xAxis = d3.svg.axis()
+            .scale(xScale)
+            .orient("bottom")
+            .ticks(5);
+
+        // Define Y axis
+        yAxis = d3.svg.axis()
+            .scale(yScale)
+            .orient("left")
+            .ticks(5);
+
+        // Create SVG element  
+        svg = d3.select("#scatterplot")  // This is where we put our vis
+            .append("svg")
+            .attr("width", canvas_width)
+            .attr("height", canvas_height)
+            .attr("left", 0)
+            .attr("id", "scatterplot_svg");
+        //.attr("xmlns", "http://www.w3.org/2000/svg");
+
+        // text label for x axis
+        svg.append("text")
+            .style("font", "20px arial")
+            .attr("transform",
+                "translate(" + ((canvas_width - padding) / 2 + 50) + " ," +
+                (canvas_height - padding + 50) + ")")
+            .style("text-anchor", "middle")
+            .text("Publications with Search Term(s)");
+
+        // text label for the y axis
+        svg.append("text")
+            .style("font", "20px arial")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0)
+            .attr("x", 0 - (canvas_height / 2))
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .text("Publications with Search Term(s) / Total Publications");
+
+        // Add the Title 
+        svg.append("text")
+            .attr("x", canvas_width / 2)
+            .attr("y", 40)
+            .attr("text-anchor", "middle")
+            .style("font-size", "24px")
+            .style("font-weight", "bold")
+            .style("fill", "#ff1ea1")
+            .text(search);
+
+        svg.attr("viewBox", "0 0 650 500")
+
+        // Create Circles
+        circs = svg.selectAll("circle")
+            .data(dataset);
+
+        circs.enter()
+            .append("circle")  // Add circle svg
+            .attr("cx", function (d) {
+                return xScale(d[0]);  // Circle's X
+            })
+            .attr("cy", function (d) {  // Circle's Y
+                return yScale(d[1]);
+            })
+            .attr("r", radius);
+
+        circs.exit()
+            .transition()
+            .duration(300)
+            .ease("exp")
+            .attr("fill", "purple")
+            .attr("r", 0)
+            .remove();
+
+        // Add to X axis
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + (canvas_height - padding) + ")")
+            .call(xAxis);
+
+        // Add to Y axis
+        svg.append("g")
+            .attr("class", "y axis")
+            .attr("transform", "translate(" + padding + ",0)")
+            .call(yAxis);
+
+        loading = false;
+    }
+
+    function addDrugBox(d) {
+        $(".tmpInfo").remove();
+        d[2] = d[2].replace(/[)(,\s]/g,''); // current hack for dealing w/ drug names
+
+        svg.append("rect")
+            .attr("id", "b" + d[2])
+            .attr("x", function () { return xScale(d[0]) - 30; })
+            .attr("y", function () { return yScale(d[1]) - 38; })
+            .attr("width", 80)
+            .attr("height", 26 + 40)
+            .attr("fill", "#ff1ea1")
+            .attr("rx", '4')
+            .attr("ry", '4')
+            .attr("padding", '10px')
+            .attr('stroke', 'rgb(45, 45, 45)')
+            .attr('stroke-width', .5)
+            .attr("opacity", .85)
+            .attr('class', 'tmpInfo');
+
+        // Selected drug text
+        svg.append("text").attr({
+            id: "t" + d[2],  // Create an id for text so we can select it later for removing on mouseout
+            x: function () { return xScale(d[0]) - 26; },
+            y: function () { return yScale(d[1]) - 19 - 40; }
+        })
+            .attr('class', 'tmpInfo')
+            .style("font", "20px arial")
+            .attr('fill', 'white')
+            .attr("margin", '10px')
+            .text(d[2]);
+
+        // Add x info
+        svg.append("text").attr({
+            id: "tx" + d[2],  // Create an id for text so we can select it later for removing on mouseout
+            x: function () { return xScale(d[0]) - 26; },
+            y: function () { return yScale(d[1]) - 19 + 20 - 40; }
+        })
+            .attr('class', 'tmpInfo')
+            .style("font", "14px arial")
+            .attr('fill', 'rbg(45,45,45)')
+            .text("x: " + d[0]);
+        // Add y info
+        svg.append("text").attr({
+            id: "ty" + d[2],  // Create an id for text so we can select it later for removing on mouseout
+            x: function () { return xScale(d[0]) - 26; },
+            y: function () { return yScale(d[1]) - 19 + 20 + 20 - 40; }
+        })
+            .attr('class', 'tmpInfo')
+            .style("font", "14px arial")
+            .attr('fill', 'rbg(45,45,45)')
+            .text("y: " + Math.round(d[1] * 1000) / 1000);
+
+        // Calculate the width of the box based on the widest text element  
+        var text_element = d3.select("#t" + d[2]);
+        var textWidth = text_element.node().getComputedTextLength()
+
+        text_element.attr("x", function () { return xScale(d[0]) - (textWidth) / 2; })
+        var box = d3.select("#b" + d[2]);
+        box.attr("x", function () { return xScale(d[0]) - (textWidth + 10) / 2 - 15; })
+            .attr("y", function () { return yScale(d[1]) - 38 - 40; })
+            .attr("width", textWidth + 40)
+    }
+
+    // Create Event Handlers for mouse
+    function handleMouseOver(d, i) {  // Add interactivity  
+        if (nodeClicked == false) {
+            // Highlight top drug in scatter plot  
+            $("#drugdetail_histo, #drugdetail").fadeIn();
+
+            // Reset all nodes 
+            $(".tmpInfo").remove();
+            d3.selectAll('circle')
+                .transition()
+                .duration(200)
+                .attr({
+                    fill: "rbg(0,0,0)",
+                    r: radius,
+                    opacity: .5
+                });
+
+            d3.select(this)
+                .transition()
+                .duration(200)
+                .attr({
+                    fill: "#d63fd6",
+                    r: radius * 3,
+                    opacity: .8
+                });
+
+            addDrugBox(d);
+        }
+    }
+
+    /* Drug Detail plot */
+    function highlightDrug(drug) {
+        drug = String(drug);
+        if (nodeClicked == false) {
+        }
+        d3.select("#" + drug)
+            .transition()
+            .duration(200)
+            .attr({
+                fill: "#d63fd6",
+                r: radius * 3,
+                opacity: .8
+            });
+    }
+
+    function refreshPlot(topDrug) {
+
+        // Update scale domains
+        xScale.domain([0, d3.max(dataset, function (d) {
+            return d[0];
+        })]);
+        yScale.domain([0, d3.max(dataset, function (d) {
+            return d[1];
+        })]);
+
+        // Update circles
+        svg.selectAll("circle")
+            .data(dataset)  // Update with new data
+            .transition()  // Transition from old to new
+            .duration(1000)  // Length of animation
+            .each("start", function (d) {  // Start animation
+                d3.select(this)  // 'this' means the current element 
+                    .attr("fill", "#d63fd6")  // Change color
+                    .attr("r", 5) // Change size 
+                    .attr("id", function (d) { return d[2] });
+            })
+            .delay(function (d, i) {
+                return i / dataset.length * 600;  // Dynamic delay (i.e. each item delays a little longer)
+            })
+            .attr("cx", function (d) {
+                return xScale(d[0]);  // Circle's X
+            })
+            .attr("cy", function (d) {
+                return yScale(d[1]);  // Circle's Y
+            })
+            .each("end", function (d) {  // End animation
+                d3.select(this)  // Change radius/color EXCEPT for topDrug
+                    .transition()
+                    .duration(200)
+                    .attr("fill", function (d) {
+                        if (d[2] !== topDrug) { return "rgb(0,0,0)" }
+                        else { return "#d63fd6"; }
+                    })  // Change color EXCEPT for topDrug
+                    .attr("r", function (d) {
+                        if (d[2] !== topDrug) { return radius }
+                        else {
+                            addDrugBox(d);
+                            return radius * 3;
+                        }
+                    })
+                    .attr("opacity", function (d) {
+                        if (d[2] !== topDrug) { return .5 }
+                        else { return .8; }
+                    });
+                // Important! Must do this after add points are in place,
+                ///// or else dots will freeze during transition if hovered over
+                d3.select(this).on("mouseover", handleMouseOver);
+            });
+
+        // Update X Axis
+        svg.select(".x.axis")
+            .transition()
+            .duration(1000)
+            .call(xAxis);
+
+        // Update Y Axis
+        svg.select(".y.axis")
+            .transition()
+            .duration(1000)
+            .call(yAxis);
+
+        $("#cupcake").fadeOut();
+    }
+} // End loadData
+
+    function getPrediction(druglist) {
+
+        $("#predictedContent").hide();
+        var similarity = $("#simselect option:selected").val();
+
+        var predictionOptionText = "The top <font style=\"weight: bold; color: #ff1ea1;\">" + $("#sliderValue").val() + "</font> drugs were used in prediction. Drugs are always ranked by the product of the number of publication count and the publication frequency. <font style=\"weight: bold; color: #ff1ea1;\">" + $("#simselect option:selected").html() + "</font> was used to establish drug-drug similarity.";
+        $("#optionparameters").html(predictionOptionText);
+
+        payload = { "similarity": similarity, "drug_list": druglist }
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "api/associate", true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                var data = JSON.parse(xhr.responseText);
+                    $("#predictedContent").fadeIn();
+                    addPredictionTable(data, 'cooccur');
+            }
+        }
+        xhr.send(JSON.stringify(payload));
+    }    
+
+    function getFinalInput() {
+        var AND = $("#searchinput").tagsinput('items').join(" AND ");
+        var finalInput;
+        if ($("#searchinput_not").tagsinput('items').length > 0) {
+            var NOT = " NOT " + $("#searchinput_not").tagsinput('items').join(" NOT ");
+            finalInput = AND + NOT;
+            return finalInput
+        }
+        else {
+            finalInput = AND; return finalInput
+        }
+    }
+
+    function processForm(e) {
+        if (e.preventDefault) e.preventDefault();  // !Important! Will just keep refreshing otherwise.
+        // Check for input terms
+        var finalInput = getFinalInput();
+
+        if (!(finalInput == null || finalInput == undefined || finalInput == '')) {
+            // 'loading' prevents multiple scatter plots from being made
+            if (loading == false) {
+                loading = true;
+
+                loadData(finalInput);
+                // Show Loading
+                $("#tables_div .loading-tab").show();
+                return false;
+            }
+        }
+        else {
+            alert("Please enter at least one term.");
+        }
+    }
+
+    function searchLink(term) {
+        // 'loading' prevents multiple scatter plots from being made
+        if (loading == false) {
+            loading = true;
+            $("#tables_div").hide();
+
+            $('#searchinput').tagsinput('removeAll');
+            $('#searchinput_not').tagsinput('removeAll');
+            $('#searchinput').tagsinput('add', term);
+            loadData($("#searchinput").val());
+
+            $("#searchterm").html(term);
+        }
+    }
+
+    ////////** DrugEnrichr **////////
+    var getUrlParameter = function getUrlParameter(sParam) {
+        var sPageURL = window.location.search.substring(1),
+            sURLVariables = sPageURL.split('&'),
+            sParameterName,
+            i;
+
+        for (i = 0; i < sURLVariables.length; i++) {
+            sParameterName = sURLVariables[i].split('=');
+
+            if (sParameterName[0] === sParam) {
+                return sParameterName[1] === undefined ? true : decodeURIComponent(sParameterName[1]);
+            }
+        }
+    };
+
+    // Get drugs from all checked or filtered rows within a table
+    function getPredictedDrugs(tableDataID, cutoff) {
+        var rows = $(tableDataID).DataTable().rows().data().toArray();
+        var drugs = [];
+
+        var combinedScore = [];
+        for (var i = 0; i < rows.length; i++) {
+            var drug = String(rows[i][1]);
+            var pubcount = rows[i][2].split("blank\">")[1].split("<")[0];
+            combinedScore.push([drug, parseFloat(pubcount) * parseFloat(rows[i][3])]);
+
+        }
+
+        combinedScore.sort(sortFunction);
+
+        for (var i = 0; i < Math.min(cutoff, combinedScore.length); i++) {
+            drugs.push(combinedScore[i][0]);
+        }
+
+        return drugs;
+    }
+
+    // Get drugs from all checked or filtered rows within a table
+    function getDrugs(tableDataID, cutoff) {
+
+        var rows = $(tableDataID).DataTable().rows().data().toArray();
+        var drugs = [];
+
+        for (var i = 0; i < Math.min(cutoff, rows.length); i++) {
+            var drug = String(rows[i][1]);
+            drugs.push(drug);
+        }
+
+        return drugs;
+    }
+
+    function sortFunction(a, b) {
+        if (a[1] === b[1]) {
+            return 0;
+        }
+        else {
+            return (a[1] > b[1]) ? -1 : 1;
+        }
+    }
+
+    // Update DrugEnrichr button with drugs currenty checked/filtered in table
+    function DrugEnrichrButton(tableID, tableDataID, type = '') {
+
+        // Identify the name of the tab
+        var activeDrugs = "";
+        if (tableID == "#drugtable") {
+            activeDrugs = getPredictedDrugs(tableDataID, $("#enrichcount").html());
+        }
+        else {
+            activeDrugs = getDrugs(tableDataID, 200);
+        }
+        // Update DrugEnrichr button
+        var drugenrichrform = "<form target='_blank' rel='noopener noreferrer' id='DrugEnrichrForm" + type + "'\
+      action='https://maayanlab.cloud/DrugEnrichr/enrich' method='post' onsubmit='return true' enctype='multipart/form-data' class='DrugEnrichrForm'>\
+      <textarea name='list' class='form-control' id='drugInputTextarea' style='display:none'>"+ activeDrugs.join('\n') + "</textarea>\
+      <input type=\"text\" name=\"description\" maxlength=\"200\" value=\""+ getFinalInput() + " (DrugShot)\"></form>";
+
+        $(tableDataID).append(drugenrichrform);
+
+        $('#DrugEnrichrForm' + type).trigger('submit');
+        $('#DrugEnrichrForm' + type).remove();
+    }
+
+    /* Create tables with JS */
+    function addTable(data) {
+        var drugcount = data['drug_count'];
+        $("#drugtable").html("");
+
+        var tabletext = "<table id='drugtabledata' class='table table-striped table-bordered compact'>\n";
+        tabletext += "<thead>\n";
+        tabletext += "<tr><th>Rank</th>\
+        <th>Drug Name</th>\
+        <th>Publications with Search Term(s)</th> \
+        <th>Publications w Search Term(s) / Total Publications</th> </tr>\n";
+        tabletext += "</thead>\n";
+        tabletext += "<tbody>\n";
+        var allDrugs = [];
+        for (var key in drugcount) {
+            if (drugcount.hasOwnProperty(key)) {
+                var temp = drugcount[key];
+                allDrugs.push(key);
+
+                var similarity = $("#simselect option:selected").val();
+                tabletext += "<tr><td></td><td>";
+                tabletext += key;
+                tabletext += "</td><td><a href=\"https://www.ncbi.nlm.nih.gov/pubmed/?term=" + data["search_term"] + "+" + key + "\" target=\"_blank\" >" + temp[0] + "</a></td><td>" + Math.round(temp[1] * 10000) / 10000 + "</td></tr>\n";
+            }
+        }
+
+        tabletext += "</tbody></table>\n";
+        tabletext += "<button id='DrugEnrichrBtn' class='DrugEnrichrBtn'><div id=\"enrichcount\" class=\"enrichcount\">" + $("#sliderValue").val() + "</div><img src=\"/static/images/drugenrichr.png\"></button>"
+        tabletext += "<button id='downloadPred' type=\"button\" class=\"btn btn-primary\">Download <i class=\"fas fa-file-download\"></i></button>";
+
+        $("#drugtable").html(tabletext);
+
+        $('#DrugEnrichrBtn').click(function () {
+            DrugEnrichrButton('#drugtable', '#drugtabledata');
+        })
+
+        $('#downloadPred').click(function () {
+            printTable('#drugtabledata', [1, 2, 3, 4], "Rank\tDrug Name\tPublication count\tFraction of publications from total drug publication\n", "drugshot_drugs.tsv");
+        });
+
+        // Add tooltips
+        $('#drugtabledata thead th').each(function () {
+            var sTitle;
+            var $td = $(this);
+            var colName = $td.text();
+            if (colName == "Rank")
+                sTitle = 'Rank of drug based on Publications with Search Term(s).';
+            else if (colName == "Drug")
+                sTitle = 'Drug Name';
+            else if (colName == "Publications with Search Term(s)")
+                sTitle = 'Number of publications associated with the search term(s) for a given drug.';
+            else if (colName == "Publications w Search Term(s)/ Total Publications")
+                sTitle = 'Publications with Search Term(s) / Total Publications';
+            else
+                sTitle = '';
+            $td.attr('title', sTitle);
+        });
+
+        /* Apply the tooltips */
+        $('#drugtabledata thead th[title]').tooltip({ "container": 'body' });
+
+        // Initialize datatable         
+        $('#drugtabledata').DataTable({
+            columnDefs: [{
+                orderable: false,
+                targets: 0
+            },
+            { width: "30px", targets: 0 }
+            ],
+            order: [[2, "desc"]],
+            dom: 'frtipB'
+        });
+
+        var t = $('#drugtabledata').DataTable();
+        // Add fixed Rank
+        t.column(0,).nodes().each(function (cell, i) {
+            cell.innerHTML = i + 1;
+            // Important! Must use this to update table downloads
+            t.cell(cell).invalidate('dom');
+        });
+
+        // Change max of slider 
+        var MAX = $('#drugtabledata').DataTable().data().toArray().length;
+        $("#sliderFilter")
+            .slider('setAttribute', 'max', Math.min(200, MAX))
+            .slider('refresh');
+        $('#max-lbl').text(Math.min(200, MAX));
+
+        //Recalculate button
+        $("#recalculate").on("click", function () {
+
+            var activeDrugs = getPredictedDrugs('#drugtabledata', $("#sliderValue").val());
+
+            $("#predictedTabs .loading-tab").show();
+            $("#predicted_drugtabledata_cooccur").remove();
+            $("#predicted_drugtabledata_corr").remove();
+            $("#predictedTabs .DrugEnrichrBtn").remove();
+
+            getPrediction(activeDrugs);
+        });
+
+        $("#associatedTab .loading-tab").hide();
+        // Initializes top filter
+        t.draw();
+    }// End Association tables
+
+    function shareLink() {
+        $("#sharelink").html("https://maayanlab.cloud/drugshot/index.html?searchin=glioblastoma&searchnot=hair%20loss&rif=autorif");
+    }
+
+    //#2
+    function addPredictionTable(data, type) {
+
+    var drugscore = data['association'];
+    $("#predicted_drug_" + type).html("");
+    var tabletext = "<table id='predicted_drugtabledata_" + type + "' class='table table-striped table-bordered compact'>\n";
+    tabletext += "<thead>\n";
+    tabletext += "<tr><th>Rank</th>\
+                <th>Drug Name</th>\
+                <th>Score</th></tr>\n";
+    tabletext += "</thead>\n";
+    tabletext += "<tbody>\n";
+
+    for (var key in drugscore) {
+        if (drugscore.hasOwnProperty(key)) {
+            var temp = drugscore[key];
+
+            var simscore = drugscore[key]["simScore"];
+            var ndrugs = drugscore[key]["topDrugs"];
+            var nscores = drugscore[key]["topScores"];
+
+            var tempstring = ""
+            for (var i = 0; i < ndrugs.length; i++) {
+                if (ndrugs[i] != "null" && nscores[i] != 0) {
+                    tempstring += "<div id=\"drugtag\">" + ndrugs[i] + "</div> " + (Math.round(nscores[i] * 10000) / 10000) + "<br>";
+                }
+            }
+
+            var similarity = $("#simselect option:selected").val();
+            tabletext += "<tr><td></td><td>";
+            tabletext += key;
+            tabletext += "</td><td>" + Math.round(simscore * 10000) / 10000 + "</div></td></tr>\n";
+        }
+    }
+
+    tabletext += "</tbody></table>\n";
+    tabletext += "<button id='DrugEnrichrBtn" + type + "' class='DrugEnrichrBtn'><div id=\"enrichcountPredict\" class=\"enrichcount\">200</div><img src='/static/images/drugenrichr.png'/></button>";
+    tabletext += "<button id='downloadPred2' type=\"button\" class=\"btn btn-primary\">Download <i class=\"fas fa-file-download\"></i></button>";
+
+    $("#predicted_drug_" + type).html(tabletext);
+
+    $('#DrugEnrichrBtn' + type).click(function () {
+        DrugEnrichrButton('#predicted_drug_' + type, '#predicted_drugtabledata_' + type, type);
+    });
+
+    $('#downloadPred2').click(function () {
+        printTable("#predicted_drugtabledata_" + type, [1, 2, 3], "Rank\tDrug\tScore\tDrugs contributing most to score:similarity score\n", "drugshot_predictions.tsv");
+    });
+
+    // Add tooltips
+    $('#predicted_drugtabledata_' + type + ' thead th').each(function () {
+        var sTitle;
+        var $td = $(this);
+        var colName = $td.text();
+        if (colName == "Rank")
+            sTitle = 'Rank of drug based on Score (descending order).';
+        else if (colName == "Drug") sTitle = 'Drug';
+        else if (colName == "Score") {
+            if (type == "cooccur") { sTitle = "The number of overlapping PubMedIDs in DrugRIF that contain the given predicted drug AND all Associated Drugs input into the DrugShot prediction. Values were then Z-score normalized." }
+            if (type == "corr") { sTitle = "Average correlation (co-expression within L1000) between the given predicted small molecule and all Associated Drugs input into the DrugShot prediction. Values were then Z-score normalized." }
+        }
+        else sTitle = '';
+
+        $td.attr('title', sTitle);
+    });
+
+    /* Apply the tooltips */
+    $('#predicted_drugtabledata_' + type + ' thead th[title]').tooltip({ "container": 'body' });
+
+    $("#predicted_drugtabledata_" + type).DataTable({
+        columnDefs: [{
+            orderable: false,
+            targets: 0
+        }
+        ],
+        order: [[2, "desc"]],
+        dom: 'frtipB'
+    });
+
+    var t = $("#predicted_drugtabledata_" + type).DataTable();
+    // Add fixed Rank
+    t.column(0,).nodes().each(function (cell, i) {
+            cell.innerHTML = i + 1;
+            // Important! Must use this to update table downloads
+            t.cell(cell).invalidate('dom');
+        });
+
+    // Fixes width of columns that are originally hidden in tab
+    // (and thus can't have their widths properly calculated at the time they're being created)
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        $($.fn.dataTable.tables(true)).DataTable()
+            .columns.adjust();
+    });
+
+    $("#predictedTabs .loading-tab").hide();
+
+    t.draw();
+
+    } // End Prediction tables
+    
+
+    function updateButton(id, val) {
+        $(id).html(val);
+    }
+
+    function popup(popupID) {
+        var popup = document.getElementById(popupID);
+        popup.classList.toggle("show");
+    }
+
+    function highlightDrug_table(drug) {
+        $(".tmpInfo").remove();
+
+        d3.selectAll("circle")
+            .transition()
+            .duration(200)
+            .attr({ fill: "rbg(0,0,0)", r: radius, opacity: .5 });
+
+        d3.select("#scatterplot_svg #" + drug)
+            .transition()
+            .duration(200)
+            .attr({ fill: "#d63fd6", r: radius * 3, opacity: .8 });
+    }
+
+    function copyClipboard() {
+        var copyText = $("#urltext").text();
+        copyStringToClipboard(copyText);
+
+        $("#urltext").animate({
+            opacity: 0.0,
+            top: "-=50"
+        }, 300, function () {
+            $("#urltext").delay(500).css({
+                "opacity": "1.0",
+                "top": "1px"
+            });
+        });
+    }
+
+    function copyStringToClipboard(str) {
+        // Create new element
+        var el = document.createElement('textarea');
+        // Set value (string to be copied)
+        el.value = str;
+        // Set non-editable to avoid focus and move outside of view
+        el.setAttribute('readonly', '');
+        el.style = { position: 'absolute', left: '-9999px' };
+        document.body.appendChild(el);
+        // Select text inside element
+        el.select();
+        // Copy text to clipboard
+        document.execCommand('copy');
+        // Remove temporary element
+        document.body.removeChild(el);
+    }
+</script>
+{% endblock %}
+
+{% block content %}
+    <h2 id="subtitle">Submit biomedical terms to receive ranked lists of relevant drugs and small molecules</h2>
+   
+    <br>
+
+    <div class="queryBox row">
+        <form id="searchform">
+
+            <div class="col-xs-12 col-sm-7 col-md-8 leftinput">
+
+                <p class="formleft" style="padding-left: 20px;">Search for these terms:</p>
+                <input type="text" id="searchinput" class="searchinput" placeholder="Search"
+                    data-role="tagsinput">
+
+                <p class="formleft" style="padding-left: 20px;">And NOT for these terms:</p>
+                <div class="notinputs">
+                    <input type="text" id="searchinput_not" class="searchinput_not" placeholder="Search"
+                        data-role="tagsinput">
+                </div>
+                <br>
+                <div id="examples">
+                    Examples: <a href="javascript:searchLink(&#39;Lung Cancer&#39;)">Lung cancer
+                        </a> | <a href="javascript:searchLink(&#39;Alopecia&#39;)">Alopecia
+                        </a> | <a href="javascript:searchLink(&#39;Diabetes&#39;)">Diabetes</a>
+                </div>
+            </div>
+
+            <div class="col-xs-12 col-sm-5 col-md-4 switch-div">
+
+                <div class="switch-content">
+                    <p class="label">
+                        Top Associated Drugs <br>to Make Predictions:
+                    </p>
+                    <input type="number" id="topDrugFilter" class="topDrugFilter" value=20>
+                    <br><br><br>
+                    <button type="submit" class="submit_btn">
+                        <p>Submit</p>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div id="cupcake" class="box" style="display: none; width:100%; margin-top: -5px;">
+        <span class="letter">L</span>
+
+        <div class="cupcakeCircle box">
+            <div class="cupcakeInner box">
+                <div class="cupcakeCore box"></div>
+            </div>
+        </div>
+
+        <span class="letter box">A</span> <span class="letter box">D</span>
+        <span class="letter box">I</span> <span class="letter box">N</span>
+        <span class="letter box">G</span>
+    </div>
+
+    <div class="submitinfo">
+        <p>
+            Submit any search terms to DrugShot to receive prioritized drugs and small molecules
+            that are most relevant to the search terms. DrugShot finds publications that mention
+            both the search terms and small molecules. It then prioritizes these small molecules
+            using various methods: 1) list of small molecules from publications; 2) predicted small
+            molecules using drug-drug similarity matrices derived from co-occurrence and co-expression (
+            <a href="https://maayanlab.cloud/drugshot">DrugRIF</a> |
+            <a href="https://maayanlab.net/SEP-L1000/" target="_blank">SEP-L1000</a>).
+        </p>
+    </div>
+
+    <div class="row linkshare" id="sharingiscaring">
+        <div class="col-1 col-xs-2 nopadright"><img src="/static/images/pass.png" class="fitimg"></div>
+        <div class="col-10 col-xs-8 nopadleft text-center">
+            <div id="search_url">
+                <div id="urltext"></div>
+            </div>
+        </div>
+        <div class="col-1 col-xs-2 nopadleft copyicon">
+            <a href="JavaScript:void(0);" onclick="copyClipboard()">
+                <i class="fas fa-share-square fa-2x"></i>
+            </a>
+        </div>
+    </div>
+
+    <hr>
+    <!-- Plots -->
+    <div class="row" id="plotsDiv">
+
+        <div class="loading-tab">
+            <div class="loader"></div>
+            <div>
+                <h4 class='loading'> Loading...</h4>
+                <h4>Querying PubMed, wait depends on the number of matching publications (up to 1 min).</h4>
+            </div>
+        </div>
+
+        <div id="plotDivContent" class="row center-text">
+            <div class="col-12 col-sm-8" id="scatterplot"></div>
+        </div>
+    </div>
+
+    <!-- Results Tables -->
+    <div id="tables_div">
+
+        <div class="row" id="table_headers">
+            <div class="col-6 col-xs-6">
+                <h2 id="associatedDrugs_header" class="table_header"></h2>
+
+                <div class="slidercontainer">
+                    <br>
+                    <div id="filtertext">Filter Drugs by Rank:</div>
+                    <input id="sliderValue" type="number" value=20 min=1>
+                    <input id="sliderFilter" type="number" data-slider-min="1" data-slider-max="200"
+                        data-slider-step="1" data-slider-value="20" />
+
+
+                    <div class="row pad-bottom">
+                        <div id="filtertext" class="col-xs-12 col-sm-4">
+                            Drug Similarity:
+                        </div>
+
+                        <div class="col-xs-12 col-sm-8">
+                            <select id="simselect" class="selectpicker" data-style="btn-primary"
+                                data-width="100%">
+                                <option value="drugrif_cooccur">DrugRIF co-occurrence</option>
+                                <option selected value="L1000_coexpression">L1000 co-expression</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button id="recalculate">Recalculate Predictions</button>
+                </div>
+
+            </div>
+
+            <div class="col-6 col-xs-6">
+                <div class="largeh pad-top">Predicted Drugs</div>
+                <div id="optionparameters"></div>
+            </div>
+        </div>
+
+
+        <div class="row" id="dataTables">
+            <!-- Associations -->
+            <div class="col-md-6" id="associatedTab">
+
+                <div class="loading-tab">
+                    <div class="loader"></div>
+                    <h3 class='loading'> Loading...</h3>
+                </div>
+
+                <div class="row pad-left">
+                    <h3>Drugs associated by literature</h3>
+                </div>
+                <div id="associatedContent">
+                    <div id="drugtable" class="tabledata"></div>
+
+                </div>
+            </div> <!-- end associatedTab -->
+
+
+            <!-- Predictions -->
+            <div class="col-md-6" id="predictedTabs">
+
+                <div class="loading-tab" style="display: none; margin-top: 100px;">
+                    <div class="loader"></div>
+                    <h3 class='loading'> Loading...</h3>
+                </div>
+                <div id="predictedContent">
+                    <div class="row pad-left">
+                        <h3>Drugs associated by drug similarity</h3>
+                    </div>
+                    <!-- Predicted: Co-occurrence -->
+                    <div id="cooccurTab" class="tab-pane fade in active">
+                        <div id="predicted_drug_cooccur" class="tabledata"></div>
+                    </div> <!-- end cooccurTab -->
+                </div> <!-- predictContent -->
+            </div> <!-- predictedTabs -->
+
+
+        </div> <!-- end dataTables -->
+
+    </div> <!-- end div_table -->
+{% endblock %}

@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block title %}DrugShot-Help{% endblock %}
+{% block content %}    
+      <h2 id="subtitle">User Manual</h2>
+      
+      <p>
+        <h3>Abstract</h3><br><br>
+        
+        
+        PubMed contains millions of publications that co-mention terms that describe drugs with other
+        biomedical terms such as genes or diseases. DrugShot is a web-based server application that
+        enables users to enter any biomedical search term into a simple input form to receive ranked
+        lists of drugs and small molecules based on their relevance to the search term. To produce ranked
+        lists of drugs, DrugShot cross-references returned PubMed IDs with DrugRIF, a curated resource of
+        drug-PMID associations, to produce an associated compound list where each compound is ranked
+        according to total co-mentions with the search term from shared PubMed IDs. Additionally, lists of
+        compounds predicted to be associated with the search terms are generated based on co-occurrence in
+        the literature and co-expression from L1000 drug-induced gene expression profiles. Through its search
+        functionality and abstraction of drug lists from different sources, DrugShot can facilitate hypothesis
+        generation by suggesting small molecule sets related to any biomedical term of interest.
+        
+      </p>
+      
+      <p>
+        <br>
+        <h3>Synopsis</h3><br><br>
+          DrugShot is a search engine that accepts any search term to return a list of small molecules that are mostly associated with the search terms. 
+          It can be used to identify novel associations between small molecules and biological mechanisms and processes. A free text search is redirected 
+          to a PubMed search via the NCBI E-utilities API for retrieving publications that match the search terms. The resulting list of publications 
+          is cross-referenced with DrugRIF to convert PMIDs to lists of small molecules. DrugRIF enlists associations between publications 
+          and small molecules. DrugShot returns the list of small molecules ranked by their frequency of mentions within the publications returned by the search terms. 
+          In addition, the returned small molecules from the initial query are supplanted with additional small molecules based on co-expression and co-occurrence.
+          <br>
+          Below we explain how the underlying datasets used by DrugShot were generated, and how to make decisions about the various options available 
+          for querying DrugShot.
+        </p>
+        
+        
+    </div>
+
+  <div class="container2" style="padding: 20px; padding-left: 15px;">
+      <hr>
+      <div>
+        
+        <h3>Underlying Data Sets</h3>
+        <br>
+        <p>
+          Below we provide a short introduction about the underlying datasets used by DrugShot. These datasets are available from the <a href="download.html">download section</a>.
+          Here we have a short introduction of the datasets that are being used by DrugShot. The data used by DrugShot are
+        </p>
+        <br>
+        <p>
+          <b>DrugRIF</b><br>
+          DrugRIF contains associations between small molecules and publications. DrugRIF is automatically generated, and it currently contains 2,121,206 
+          associations. We constructed DrugRIF by querying PubMed with InChIKeys (each with an associated small molecule name) and collected the PMIDs for each query.
+        </p>
+        
+        <p>
+          <b>Drug-drug L1000 Co-expression Matrix from SEP-L1000</b><br>
+          The drug-drug co-expression matrix used by DrugShot contains pairwise correlations between drug-induced gene expression profiles.
+          The correlations were calculated using cosine similarity between drug-induced gene expression signatures calculated using the Characteristic Direction method.
+          This pairwise drug similarity matrix is used to transitively associate drug sets returned from the original DrugShot query with 
+          their most correlated co-expressed drugs.
+        </p>
+        
+        <p>
+          <b>Drug-drug Co-occurrence Matrix from DrugRIF</b><br>
+          The drug-drug co-occurrence matrix contains pairwise drug-drug similarity based on the co-occurrence of drugs in publication abstracts. 
+          The matrix contains the counts of how often two drugs co-occur in the same query list. 
+        </p>
+        <br>
+        <hr>
+        
+        <h3>Submitting Queries to DrugShot</h3>
+        <br>
+        <div>
+          
+          <center><img class="helpimg singleimg" src="/static/images/query.png"></center>
+          <br><br>
+          <p>
+          The query box of DrugShot contains two free text input fields where users can enter multiple search terms in combination. The top field is 
+          for terms that will be converted to associations with drugs. The bottom free text input field is for terms that the user wishes to exclude
+          from the search. For example, the figure above describes how to conduct a search if we want to identify drugs that are most relevant to the
+          search term “liver fibrosis” but not "cancer".
+          </p><p>
+          The input field labeled "Top Associated Drugs to Make Predictions" sets the number of top drugs from the query to use for generating the 
+          predicted lists. This value can be changed later after the query completes.
+          </p><p>
+          The query time varies from instantly returned results to about 30 seconds. The time for the query to complete is mostly dependent on the 
+          number of associated publications found for the search terms. A very general search term such as "cancer" or “diabetes” will result in a 
+          longer wait time than a more specific search term such as "hair loss". Below the free text input fields, several sample queries are provided. 
+          Clicking on these terms triggers a query.
+          </p>
+        </div>
+        
+        <hr>
+        
+        <h3>Result Tables</h3>
+        <br>
+                <div class="row">
+          <div class="col-xs-12 col-sm-5 col-md-4"><img class="helpimg" src="/static/images/restable.png"></div>
+          <div class="col-xs-12 col-sm-7 col-md-8">
+          <b>Associated Drug Table</b><br>
+          The associated drug table contains the same information that is displayed in the scatter plot. The table will appear once the query results are 
+          returned. The number of drugs returned by the query can vary, depending on how many drugs are associated with the search terms. The 
+          slider above the table enables users to set the threshold for how many drugs to include for predicting additional drugs. In this example, the 
+          top 50 associated drugs are used to perform the prediction. 
+          
+          <br><br>
+          <b>Predicted Drug Tables</b><br>
+          Predicting additional drugs that should be associated with the search terms is performed using the drug-drug co-expression matrix from SEP-L1000 
+          and the drug-drug co-occurrence matrix from DrugRIF. The results table can be viewed by selecting the corresponding tab. The prediction 
+          tables list the top 200 drugs most associated with the drug set from the associated drug table on the left.
+          
+          <br><br>
+          The data from both tables can be downloaded in a variety of formats. The drug set within each table can be directly submitted to <a href="https://maayanlab.cloud/DrugEnrichr/">DrugEnrichr</a> for further analysis.
+        </div>
+        </div>
+        
+        <hr>
+        
+        <h3>Drug Set Augmentation</h3>
+        <br>
+        <div>
+          The drug set augmentation page lets users upload a set of drugs. DrugShot can compute the group similarity of the drug set to all drugs in the given drug-drug similarity matrix.
+          DrugShot will identify the top 200 drugs ranked by their similarity score. In the case of the drug co-expression matrix, the average cosine similarity between the input drug set
+          to the drugs in the co-expression matrix is calculated. In the case of co-occurrence matrix, the average PubMedID co-mentions between the input drug set and drugs in the co-occurence
+          matrix are calculated.
+          <br><br>
+          The novelty of drugs is also reported here by returning the number of publications per drug. Drugs are grouped into four quantiles of novelty based on the 
+          publication count of drugs in DrugRIF. A drug is rare if it has 7 or fewer publications. A drug is uncommon when it has between 8 and 25 publications.
+          Common drugs have 26 to 87 publications. All drugs with at least 88 publications are considered very common. 
+          These bins divide the drugs into equisized bins.
+          <br><br>
+          <center><img class="helpimg singleimg" src="/static/images/quantile.png"></div></center>
+        </div>
+        
+        <hr>
+        
+        <h3>Terms of Use</h3>
+        <br>
+        The DrugShot source code is available from GitHub under the Apache License 2.0. Commercial users should contact Mount Sinai Innovation Partners at MSIPInfo@mssm.edu for licensing.
+        <br><br><b>GitHub Repository</b><br>
+        The DrugShot source code is available on GitHub at <a href="https://github.com/MaayanLab/drugshot">https://github.com/MaayanLab/drugshot</a>
+        <br><br>
+        <b>Disclaimer</b><br>
+        DrugShot is not to be used for treating or diagnosing human subjects. DrugShot or any documents available from this server are provided as is 
+        without any warranty of any kind, either express, implied, or statutory, including, but not limited to, any implied warranties of merchantability, 
+        fitness for particular purpose and freedom from infringement, or that DrugShot or any documents available from this server will be error free. 
+        The Ma'ayan Laboratory makes no representations that the use of DrugShot or any documents available from this server will not infringe any patent or 
+        proprietary rights of third parties. In no event will the Ma'ayan Laboratory or any of its members be liable for any damages, including but not limited 
+        to direct, indirect, special or consequential damages, arising out of, resulting from, or in any way connected with the use of DrugShot or documents 
+        available from this server. 
+        
+        <hr>
+      
+        Should you have any questions regarding DrugShot please don't hesitate to <a href='mailto:eryk.kropiwnicki@icahn.mssm.edu?subject=DrugShot&cc=avi.maayan@mssm.edu'>contact us</a>.
+          
+      </div>
+      
+  </div>
+</div>
+{% endblock %}
+
+
+

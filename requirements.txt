@@ -1,0 +1,8 @@
+flask
+flask-cors
+Flask-Session
+pytz
+h5py
+pandas
+numpy
+requests

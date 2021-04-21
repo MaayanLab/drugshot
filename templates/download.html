@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}DrugShot-Download{% endblock %}
+
+{% block content %}
+<body class="Site">        
+      <h2 id="subtitle">Download Section</h2>
+      The download section contains all data that was compiled for DrugShot. It contains various drug pair similarity matrices as well as a preprocessed DrugRIF file. Drug association to biological terms is performed using the NCBI e-utilities API for PubMed.
+      </div>
+    
+    <div class="container" style="padding: 20px; padding-left: 15px;">
+      <hr>
+      
+      <div style="height: 120px;">
+        <h3>DrugRIF</h3>
+        DrugRIF was built by querying PubChem with all small molecules from <a href="https://maayanlab.cloud/drugmonizome/">Drugmonizome</a> and <a href="https://maayanlab.net/SEP-L1000/">SEP-L1000</a> using the PUG-REST API. All PubMed IDs matching the small molecule query with associated publications are contained in this file. The file contains 2,121,206 small molecule associations to PubMed IDs.
+        <br><br>
+        <div style="font-size: 16px;">
+          <div style="float: left; width: 180px;"><a href="https://appyters.maayanlab.cloud/storage/DrugShot/DrugRIF.tsv.gz">DrugRIF</a></div>
+          <div style="float: left; margin-left: 30px;">8.55 MB</div>
+        </div>
+      </div>
+      
+      <hr>
+      
+      <div style="height: 120px;">
+        <h3>Pairwise Drug L1000 Correlation</h3>
+        The pairwise drug correlation co-expression matrix was calculated using the L1000 drug-induced signature data from SEP-L1000. Differential gene expression was calculated using the Characteristic Direction method, and pairwise cosine similarity was computed between all drug signatures.
+        <br><br>
+        <div style="font-size: 16px;">
+          <div style="float: left; width: 180px;"><a href="https://appyters.maayanlab.cloud/storage/DrugShot/L1000_coexpression.h5">Correlation matrix</a></div>
+          <div style="float: left; margin-left: 30px;">1.44 GB</div>
+        </div>
+      </div>
+      
+      <hr>
+      
+      <div style="height: 120px;">
+        <h3>Pairwise Drug Co-occurrence</h3>
+        Pairwise co-occurrence of PMIDs between drugs from DrugRIF.
+        <br><br>
+        <div style="font-size: 16px;">
+          <div style="float: left; width: 180px;"><a href="https://appyters.maayanlab.cloud/storage/DrugShot/drug_cooccur.h5">Co-occurrence matrix</a></div>
+          <div style="float: left; margin-left: 30px;">144.60 MB</div>
+        </div>
+      </div>
+      
+      <hr>
+      
+      Should you have any questions regarding the data please don't hesitate to <a href='mailto:eryk.kropiwnicki@icahn.mssm.edu?subject=DrugShot&cc=avi.maayan@mssm.edu'>contact us</a>.
+      
+  </div>
+{% endblock %}
+
+
+
+
+

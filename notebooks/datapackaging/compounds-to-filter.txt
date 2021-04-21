@@ -1,0 +1,152 @@
+ethanol
+cholesterol
+tyrosine
+glutathione
+sucrose
+creatinine
+glutamic acid
+serine
+cysteine
+acetic acid
+lactic acid
+estradiol
+edetic acid
+arginine
+progesterone
+atp
+testosterone
+acetylcholine
+glycerol
+urea
+glycine
+adenosine
+norepinephrine
+aspartic acid
+histamine
+citric acid
+l-lysine
+nadph dihydro-nicotinamide-adenine-dinucleotidephosphate
+folic-acid
+creatine
+tryptophan
+histidine
+malonaldehyde
+fluorescein
+ascorbic-acid
+leucine
+gamma-aminobutyric acid
+pyruvic acid
+toluene
+adenosine-phosphate
+phenol
+adenine
+threonine
+phenylalanine
+acetylcysteine
+dodecyl sulfate
+guanine
+chloroform
+formic acid
+propidium
+valine
+acetaldehyde
+corticosterone
+aldosterone
+2'-deoxycytidine
+choline
+glutamine
+succinic acid
+d-1,4-dithiothreitol
+saccharin
+isopropyl alcohol
+guanosine-5'-monophosphate
+aniline
+dihydroxyacetone phosphate
+indole
+asparagine
+guanosine
+phosphatidyl serine
+palmitic acid
+uracil
+xanthine
+isoleucine
+butyric acid
+taurine
+TCDD-dioxin
+thymine
+oxalic acid
+benzo(a)pyrene
+carbon-tetrachloride
+propanoic acid
+meta-nitro-tyrosine
+butyl alcohol
+guanosine-5'-triphosphate
+alpha-d-arabinofuranose
+malic acid
+deoxycholic-acid
+PMSF
+1,2-dihydroxybenzene
+benzoic-acid
+maltose
+estrone
+diethyl ether
+2-deoxyglucose
+p-cresol
+cytidine
+oxogluric acid
+aminolevulinic-acid
+1,10-phenanthroline
+o-bromophenol
+spermine
+dihydroxyacetone
+n,n-dimethylformamide
+phorbol-myristate-acetate
+spermidine
+urethane
+furan
+pentetic-acid
+n-acetylglucosamine
+tetraethylammonium
+chloral hydrate
+phosphocreatine
+gluconic acid
+pepstatin
+n-acetyl-beta-neuraminic acid
+uric acid
+dexfosfoserine
+isoflavone
+carbamic acid
+bisphenol-a
+8-hydroxy-2'-deoxyguanosine
+gamma-butyrolactone
+glutathione disulfide
+propyl alcohol
+pyrazole
+2-(3,4-dihydroxyphenyl)acetic acid
+cholic acid
+pyridoxal phosphate
+malonic acid
+p-nitrophenol
+glyoxylic acid
+caprylic alcohol
+taurocholic acid
+pyruvaldehyde
+alanine
+tyramine
+methionine
+3-isobutyl-1-methyl-7h-xanthine
+n-nitrosodiethylamine
+nitroarginine
+dioxane
+phosphoenolpyruvate
+benzyl alcohol
+phthalic acid
+myristic acid
+phenylethyl alcohol
+synthetic camphor
+tetrabutylammonium ion
+beta-d-glucose
+dimethyl sulfoxide
+dopamine
+serotonin
+cocaine

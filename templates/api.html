@@ -1,0 +1,339 @@
+{% extends "base.html" %}
+{% block title %}DrugShot-API{% endblock %}
+
+{% block scripts %}
+<script src="https://amp.pharm.mssm.edu/Enrichr/lib/highlight.js" type="text/javascript"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script>
+function scrollPage(location){
+  $('html, body').animate({
+      scrollTop: $("#"+location).offset().top - 20
+  }, 500);
+}
+</script>
+
+{% endblock %}
+{% block content %}     
+      <h2>Introduction</h2>
+      
+      <p>
+      This document describes the REST APIs provided by DrugShot. These APIs are for developers who want to programmatically retrieve drugs associated with search terms of interest.
+      <br><br>
+      In this documentation, we will use Python to demo the API requests. The code can be used as is or as a template for your own modifications in Python or another language. We use the requests library, which can be installed with pip.
+      </p>
+      
+      <br>
+      
+      <h2 id="subtitle">API section</h2>
+      <ul>
+        <li>
+          <a href="javascript:scrollPage('drugpub');">Get PubMed IDs associated with a drug</a>
+        </li>
+        <li>
+          <a href="javascript:scrollPage('searchterm');">Get drugs associated with search terms</a>
+        </li>
+        <li>
+          <a href="javascript:scrollPage('associate');">Predict associated drugs using drug-drug similarity</a>
+        </li>
+      </ul>
+    
+    <br>
+    
+    <div id="content">
+    
+    <div id="api-content">
+      
+      <div id="qa">
+        
+    <h3 id="drugpub" class="question">Get PubMed IDs associated with drug</h3>
+    <table cellspacing="10">
+      <tbody><tr>
+        <td><strong>Method</strong></td>
+        <td>POST</td>
+      </tr>
+      <tr>
+        <td><strong>URL</strong></td>
+        <td class="url">https://maayanlab.cloud/drugshot/api/drugpublications</td>
+      </tr>
+      <tr>
+        <td><strong>Returns</strong></td>
+        <td>
+          <table class="parameters">
+            <tbody><tr>
+              <td><strong>drug_pmids</strong></td>
+              <td>List of PubMedIDs associated with query drug</td>
+            </tr>
+            <tr>
+              <td><strong>drug_term_pmids</strong></td>
+              <td>List of PubMedIDs associated with query drug <b>and</b> query term</td>
+            </tr>
+            <tr>
+              <td><strong>searchterm</strong></td>
+              <td>cached search term from previous query</td>
+            </tr>
+            <tr>
+              <td><strong>drug_pmids_count</strong></td>
+              <td>number of publications matching drug</td>
+            </tr>
+            <tr>
+              <td><strong>drug_term_pmids_count</strong></td>
+              <td>number of publications matching drug and search term</td>
+            </tr>
+
+          </tbody></table>
+        </td>
+      </tr>
+      
+      <tr>
+        <td><strong>Parameters</strong></td>
+        <td>
+          <table class="parameters">
+            <tbody>
+              <tr>
+              <td><strong>drug</strong></td>
+              <td>drug name</td>
+            </tr>
+            <tr>
+              <td><strong>term</strong></td>
+              <td>search term</td>
+            </tr>
+          </tbody></table>
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Example code</strong></td>
+        <td><pre><code class="python hljs">import json
+import requests
+
+DRUGSHOT_URL = 'https://maayanlab.cloud/drugshot/api/drugpublications'
+payload = {"drug": "daunorubicin", "term": "alopecia"}
+
+response = requests.post(DRUGSHOT_URL, json=payload)
+
+data = json.loads(response.text)
+print(data)
+</code></pre>
+        </td>
+      </tr>
+      <tr>
+        <td class="key"><strong>Example results</strong></td>
+        <td><pre><code class="json hljs">{
+  "drug_pmids":[
+  10100273,
+  10190555,
+  10203107,
+  ...
+  ],
+  "drug_term_pmids": [
+  11699226,
+  12908776,
+  17505516,
+    ...
+  ],
+  "search_term": "alopecia",
+  "count_pmid": 439,
+  "count_filtered_pmid": 7
+}
+</code></pre></td>
+      </tr>
+    </tbody></table>
+    
+    </div>
+
+
+<!------------------------------------------------------------------------------------------>
+<!------------------------------------------------------------------------------------------>
+
+<div id="qa">
+    <h3 id="searchterm" class="question">Get drugs associated with search terms</h3>
+    <table cellspacing="10">
+      <tbody><tr>
+        <td><strong>Method</strong></td>
+        <td>POST</td>
+      </tr>
+      <tr>
+        <td><strong>URL</strong></td>
+        <td class="url">https://maayanlab.cloud/drugshot/api/search</td>
+      </tr>
+      <tr>
+        <td><strong>Returns</strong></td>
+        <td>
+          <table class="parameters">
+            <tbody><tr>
+              <td><strong>PubMedID_count</strong></td>
+              <td>number of publications matching term</td>
+            </tr>
+            <tr>
+              <td><strong>drug_count</strong></td>
+              <td>drugs with total number of matching PubMed IDs and fraction of matching<br>PubMed IDs relative to all PubMed IDs the drug matches in DrugRIF.</td>
+            </tr>
+            <tr>
+              <td><strong>search_term</strong></td>
+              <td>search term submitted in query</td>
+            </tr>
+            <tr>
+              <td><strong>return_size</strong></td>
+              <td>number of drugs matching search</td>
+            </tr>
+            <tr>
+              <td><strong>query_time</strong></td>
+              <td>query time in seconds</td>
+            </tr>
+          </tbody></table>
+        </td>
+
+      </tr>
+      <tr>
+        <td><strong>Parameters</strong></td>
+        <td>
+          <table class="parameters">
+            <tbody>
+              <tr>
+              <td><strong>term</strong></td>
+              <td>search term</td>
+            </tr>
+          </tbody></table>
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Example code</strong></td>
+        <td><pre><code class="python hljs">import json
+import requests
+
+DRUGSHOT_URL = 'https://maayanlab.cloud/drugshot/api/search'
+payload = {"term": "alopecia"}
+
+response = requests.post(DRUGSHOT_URL, json=payload)
+
+data = json.loads(response.text)
+print(data)</code></pre>
+        </td>
+      </tr>
+      <tr>
+        <td class="key"><strong>Example results</strong></td>
+        <td><pre><code class="json hljs">{
+  "search_term": "wound healing"
+  "PubMedID_count": 176684,
+  "drug_count": {
+  'l-eflornithine': [
+      7,
+      0.025547445255474453
+   ],
+  'eflornithine': [
+      6,
+      0.01056338028169014
+    ],
+  'tamoxifen': [
+      41,
+      0.0031247618321774257
+    ],
+    ...
+  },
+    "return_size": 334,
+    "query_time": 2.4000279903411865,
+}
+</code></pre></td>
+      </tr>
+    </tbody></table>
+</div>
+<!------------------------------------------------------------------------------------------>
+<!------------------------------------------------------------------------------------------>
+
+<div id="qa">
+    <h3 id="associate" class="question">Predict associated drugs using drug-drug similarity.<br> The possible similarity matrices are <b>drugrif_cooccur</b> and <b>L1000_coexpression</b>.</h3>
+    <table cellspacing="10">
+      <tbody><tr>
+        <td><strong>Method</strong></td>
+        <td>POST</td>
+      </tr>
+      <tr>
+        <td><strong>URL</strong></td>
+        <td class="url">https://maayanlab.cloud/drugshot/api/associate</td>
+      </tr>   
+      <tr>
+        <td><strong>Returns</strong></td>
+        <td>
+          <table class="parameters">
+            <tbody><tr>
+              <td><strong>associations</strong></td>
+              <td>drugs with similarity to input drug list</td>
+            </tr>
+            <td><strong>query_time</strong></td>
+              <td>query time for query in seconds</td>
+            </tr>
+          </tbody></table>
+        </td>
+      </tr>
+      
+      <tr>
+        <td><strong>Parameters</strong></td>
+        <td>
+          <table class="parameters">
+            <tbody>
+              <tr>
+              <td><strong>similarity</strong></td>
+              <td>drug-drug similarity matrix (drugrif_cooccur, L1000_coexpression)</td>
+            </tr>
+              <tr>
+              <td><strong>drug_list</strong></td>
+              <td>comma separated drug names</td>
+            </tr>
+          </tbody></table>
+        </td>
+      </tr>
+      
+      <tr>
+        <td><strong>Example code</strong></td>
+        <td><pre><code class="python hljs">import json
+import requests
+
+DRUGSHOT_URL = 'https://maayanlab.cloud/drugshot/api/associate'
+payload = {
+  "drug_list": ["finasteride","squaric acid dibutyl ester","stanolone",
+                "pidorubicine","fluorouracil","kanamycin","vinorelbine",
+                "gemcitabine","dutasteride","capecitabine","gentamicin",
+                "minoxidil","etacrynic-acid","baricitinib","irinotecan",
+                "mitoxantrone","doxorubicin","acitretin","prednisone","camptothecin"],
+  "similarity": "L1000_coexpression" 
+}
+response = requests.post(DRUGSHOT_URL, json=payload)
+
+data = json.loads(response.text)
+print(data)
+</code></pre>
+        </td>
+      </tr>
+      <tr>
+        <td class="key"><strong>Example results</strong></td>
+        <td><pre><code class="json hljs">{
+"association": {
+    "etoposide": {
+        "publications": 11012,
+        "simScore": 0.1735661679257949,
+        "topDrugs": {
+            ...
+        },
+        "topScores": {
+            ...
+        }
+    },
+    ... 
+},
+"query_time": 5.926133871078491
+}</code></pre></td>
+      </tr>
+    </tbody></table>
+</div>
+
+<!------------------------------------------------------------------------------------------>
+<!------------------------------------------------------------------------------------------>
+
+
+</div>
+
+</div></div>
+{% endblock %}
+
+
+
+

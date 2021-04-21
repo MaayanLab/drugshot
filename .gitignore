@@ -1,0 +1,6 @@
+venv/
+.DS_Store
+.ipynb_checkpoints/
+__pycache__/
+flask_session/
+similarity/
