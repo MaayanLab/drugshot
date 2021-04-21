@@ -75,7 +75,7 @@
         <br>
         <div>
           
-          <center><img class="helpimg singleimg" src="/static/images/query.png"></center>
+          <center><img class="helpimg singleimg" src="{{ url_for('static',filename='images/query.png') }}"></center>
           <br><br>
           <p>
           The query box of DrugShot contains two free text input fields where users can enter multiple search terms in combination. The top field is 
@@ -98,7 +98,7 @@
         <h3>Result Tables</h3>
         <br>
                 <div class="row">
-          <div class="col-xs-12 col-sm-5 col-md-4"><img class="helpimg" src="/static/images/restable.png"></div>
+          <div class="col-xs-12 col-sm-5 col-md-4"><img class="helpimg" src="{{ url_for('static',filename='images/restable.png') }}"></div>
           <div class="col-xs-12 col-sm-7 col-md-8">
           <b>Associated Drug Table</b><br>
           The associated drug table contains the same information that is displayed in the scatter plot. The table will appear once the query results are 
@@ -132,7 +132,7 @@
           Common drugs have 26 to 87 publications. All drugs with at least 88 publications are considered very common. 
           These bins divide the drugs into equisized bins.
           <br><br>
-          <center><img class="helpimg singleimg" src="/static/images/quantile.png"></div></center>
+          <center><img class="helpimg singleimg" src="{{ url_for('static',filename='images/quantile.png') }}"></div></center>
         </div>
         
         <hr>
