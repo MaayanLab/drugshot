@@ -17,16 +17,14 @@ from flask_session import Session
 
 from utils import get_s3_file, query_ncbi, slice_matrix, associate_drugs
 
-base_name = os.environ.get('BASE_NAME', '/drugshot')
+base_name = os.environ.get("BASE_NAME", '/drugshot')
 
-app = Flask(__name__, static_url_path=f"/{base_name}/static")
+app = Flask(__name__, static_url_path=f"{base_name}/static")
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 print("server started")
-
-cors = CORS(app, resources={r"/"+base_name+"/*": {"origins": "*"}})
 
 print("init DrugRIF")
 

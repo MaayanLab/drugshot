@@ -159,7 +159,7 @@
         $("#d3content").show();
         drawD3(data);
 
-        var searchinfo = "<h3><img src=\"/static/images/similarity.png\" width=40> " + fullname + "</h3>";
+        var searchinfo = "<h3><img src=\"{{ url_for('static',filename='images/similarity.png') }}\" width=40> " + fullname + "</h3>";
         $("#searchpara").html(searchinfo);
 
         var searchinfo = "<h3>User Upload</h3>"
@@ -186,7 +186,7 @@
         }
 
         tabletext += "</tbody></table>\n";
-        tabletext += "<button id='DrugEnrichrBtnUpload' class='DrugEnrichrBtn'><div id=\"enrichcountUpload\" class=\"enrichcount\">" + data.drugcount.length + "</div><img src='/static/images/drugenrichr.png'/></button>";
+        tabletext += "<button id='DrugEnrichrBtnUpload' class='DrugEnrichrBtn'><div id=\"enrichcountUpload\" class=\"enrichcount\">" + data.drugcount.length + "</div><img src='{{ url_for('static',filename='images/drugenrichr.png') }}'/></button>";
         tabletext += "<button id='downloadPred' type=\"button\" class=\"btn btn-primary\" style=\"margin-left: 15px; height: 35px;\">Download <i class=\"fas fa-file-download\"></i></button>";
 
 
@@ -305,7 +305,7 @@
     }
 
     tabletext += "</tbody></table>\n";
-    tabletext += "<button style='margin-top: 5px;' id='DrugEnrichrBtnPred' class='DrugEnrichrBtn'><div id=\"enrichcountUpload\" class=\"enrichcount\">" + countRank + "</div><img src='/static/images/drugenrichr.png'/></button>";
+    tabletext += "<button style='margin-top: 5px;' id='DrugEnrichrBtnPred' class='DrugEnrichrBtn'><div id=\"enrichcountUpload\" class=\"enrichcount\">" + countRank + "</div><img src='{{ url_for('static',filename='images/drugenrichr.png') }}'/></button>";
     tabletext += "<button id='downloadPred2' type=\"button\" class=\"btn btn-primary\" style=\"margin-left: 15px; height: 35px; margin-top: 5px;\">Download <i class=\"fas fa-file-download\"></i></button>";
 
 

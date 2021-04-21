@@ -738,7 +738,7 @@
         }
 
         tabletext += "</tbody></table>\n";
-        tabletext += "<button id='DrugEnrichrBtn' class='DrugEnrichrBtn'><div id=\"enrichcount\" class=\"enrichcount\">" + $("#sliderValue").val() + "</div><img src=\"/static/images/drugenrichr.png\"></button>"
+        tabletext += "<button id='DrugEnrichrBtn' class='DrugEnrichrBtn'><div id=\"enrichcount\" class=\"enrichcount\">" + $("#sliderValue").val() + "</div><img src=\"{{ url_for('static',filename='images/drugenrichr.png') }}\"></button>"
         tabletext += "<button id='downloadPred' type=\"button\" class=\"btn btn-primary\">Download <i class=\"fas fa-file-download\"></i></button>";
 
         $("#drugtable").html(tabletext);
@@ -857,7 +857,7 @@
     }
 
     tabletext += "</tbody></table>\n";
-    tabletext += "<button id='DrugEnrichrBtn" + type + "' class='DrugEnrichrBtn'><div id=\"enrichcountPredict\" class=\"enrichcount\">200</div><img src='/static/images/drugenrichr.png'/></button>";
+    tabletext += "<button id='DrugEnrichrBtn" + type + "' class='DrugEnrichrBtn'><div id=\"enrichcountPredict\" class=\"enrichcount\">200</div><img src='{{ url_for('static',filename='images/drugenrichr.png') }}'/></button>";
     tabletext += "<button id='downloadPred2' type=\"button\" class=\"btn btn-primary\">Download <i class=\"fas fa-file-download\"></i></button>";
 
     $("#predicted_drug_" + type).html(tabletext);
@@ -1048,7 +1048,7 @@
     </div>
 
     <div class="row linkshare" id="sharingiscaring">
-        <div class="col-1 col-xs-2 nopadright"><img src="/static/images/pass.png" class="fitimg"></div>
+        <div class="col-1 col-xs-2 nopadright"><img src="{{ url_for('static',filename='images/pass.png') }}" class="fitimg"></div>
         <div class="col-10 col-xs-8 nopadleft text-center">
             <div id="search_url">
                 <div id="urltext"></div>
