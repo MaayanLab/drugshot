@@ -18,6 +18,7 @@ from flask_session import Session
 from utils import get_s3_file, query_ncbi, slice_matrix, associate_drugs
 
 base_name = os.environ.get("BASE_NAME", '/drugshot')
+api_key = os.environ.get('API_KEY', 'NA')
 
 app = Flask(__name__, static_url_path=f"{base_name}/static")
 app.config["SESSION_PERMANENT"] = False
@@ -59,7 +60,7 @@ def search():
     stime = time.time()
 
     if searchterm not in session:
-        query_ncbi(searchterm, session)
+        query_ncbi(searchterm, api_key, session)
 
     associated_drug_counts = drugrif.loc[set(drugrif.index).intersection(set(session[searchterm]))]
 
@@ -128,7 +129,7 @@ def drugpublications():
     search_term = input_json["term"]
 
     if search_term not in session:
-        query_ncbi(search_term, session)
+        query_ncbi(search_term, api_key, session)
 
     pmids = session[search_term]
     

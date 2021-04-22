@@ -14,7 +14,7 @@ def get_s3_file(filename):
         urllib.request.urlretrieve(url, f'similarity/{filename}.h5')
 
 
-def query_ncbi(searchterm, session):
+def query_ncbi(searchterm, api_key, session):
     countMax = 1000000
     pagestep = 1000000
     going = True
@@ -22,6 +22,7 @@ def query_ncbi(searchterm, session):
     pmids = []
     
     print(searchterm)
+    print(api_key)
     print(session)
 
     while going:
@@ -30,7 +31,8 @@ def query_ncbi(searchterm, session):
             "/entrez/eutils/esearch.fcgi"+
             "?db=pubmed&term="+searchterm+
             "&retstart="+str(i*pagestep)+
-            "&retmax="+str(pagestep))
+            "&retmax="+str(pagestep)+
+            "&api_key="+api_key)
         
         page = requests.get(url).text
         pmids = pmids + re.findall(r'Id>(.*?)<', page)
