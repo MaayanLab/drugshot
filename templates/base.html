@@ -54,6 +54,15 @@
     <script src="{{ url_for('static',filename='js/jquery.auto-complete.min.js') }}"></script> 
     <link rel="stylesheet" href="{{ url_for('static',filename='css/jquery.auto-complete.css') }}">
 
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-4J6Q4SS3HR"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-4J6Q4SS3HR');
+    </script>
+
 </head>
 {%block scripts %}
 {% endblock %}
