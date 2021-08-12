@@ -24,21 +24,6 @@
       $("#userdrugset").val(druglist.join("\n"));
       submitQuery();
     }
-
-    /*$.getJSON("gene.json", function (data) {
-      var genes = data;
-      $("#genesymbolsearch").autoComplete({
-        minChars: 3,
-        source: function (term, suggest) {
-          term = term.toLowerCase();
-          var choices = genes;
-          var matches = [];
-          for (i = 0; i < choices.length; i++)
-            if (~choices[i].toLowerCase().indexOf(term)) matches.push(choices[i]);
-          suggest(matches);
-        }
-      });
-    });*/
   }); //End .ready()
 
   function printTable(tableID, cols, header, filename) {
@@ -379,8 +364,8 @@
             <p>Similarity:</p>
 
             <select id="simselect" class="selectpicker" data-style="btn-primary" data-width="250px">
-              <option value="drugrif_cooccur">DrugRIF co-occurrence</option>
-              <option selected value="L1000_coexpression">L1000 co-expression</option>
+              <option value="drugrif_cooccur">Literature co-mentions</option>
+              <option selected value="L1000_coexpression">L1000 signature similarity</option>
             </select>
 
             <br><br>

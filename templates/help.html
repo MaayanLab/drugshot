@@ -15,7 +15,7 @@
         drug-PMID associations, to produce an associated compound list where each compound is ranked
         according to total co-mentions with the search term from shared PubMed IDs. Additionally, lists of
         compounds predicted to be associated with the search terms are generated based on co-occurrence in
-        the literature and co-expression from L1000 drug-induced gene expression profiles. Through its search
+        the literature and signature similarity from L1000 drug-induced gene expression profiles. Through its search
         functionality and abstraction of drug lists from different sources, DrugShot can facilitate hypothesis
         generation by suggesting small molecule sets related to any biomedical term of interest.
         
@@ -29,7 +29,8 @@
           to a PubMed search via the NCBI E-utilities API for retrieving publications that match the search terms. The resulting list of publications 
           is cross-referenced with DrugRIF to convert PMIDs to lists of small molecules. DrugRIF enlists associations between publications 
           and small molecules. DrugShot returns the list of small molecules ranked by their frequency of mentions within the publications returned by the search terms. 
-          In addition, the returned small molecules from the initial query are supplanted with additional small molecules based on co-expression and co-occurrence.
+          In addition, the returned small molecules from the initial query are supplanted with additional small molecules based on literature co-mentions and 
+          L1000 signature similarity.
           <br>
           Below we explain how the underlying datasets used by DrugShot were generated, and how to make decisions about the various options available 
           for querying DrugShot.
@@ -56,16 +57,16 @@
         </p>
         
         <p>
-          <b>Drug-drug L1000 Co-expression Matrix from SEP-L1000</b><br>
-          The drug-drug co-expression matrix used by DrugShot contains pairwise correlations between drug-induced gene expression profiles.
+          <b>Drug-drug L1000 Signature Similarity Matrix from SEP-L1000</b><br>
+          The drug-drug signature similarity matrix used by DrugShot contains pairwise correlations between drug-induced gene expression profiles.
           The correlations were calculated using cosine similarity between drug-induced gene expression signatures calculated using the Characteristic Direction method.
           This pairwise drug similarity matrix is used to transitively associate drug sets returned from the original DrugShot query with 
           their most correlated co-expressed drugs.
         </p>
         
         <p>
-          <b>Drug-drug Co-occurrence Matrix from DrugRIF</b><br>
-          The drug-drug co-occurrence matrix contains pairwise drug-drug similarity based on the co-occurrence of drugs in publication abstracts. 
+          <b>Drug-drug Literature Co-mentions Matrix from DrugRIF</b><br>
+          The drug-drug literature co-mentions matrix contains pairwise drug-drug similarity based on the co-occurrence counts of drugs in publication abstracts. 
           The matrix contains the counts of how often two drugs co-occur in the same query list. 
         </p>
         <br>
@@ -108,8 +109,8 @@
           
           <br><br>
           <b>Predicted Drug Tables</b><br>
-          Predicting additional drugs that should be associated with the search terms is performed using the drug-drug co-expression matrix from SEP-L1000 
-          and the drug-drug co-occurrence matrix from DrugRIF. The results table can be viewed by selecting the corresponding tab. The prediction 
+          Predicting additional drugs that should be associated with the search terms is performed using the drug-drug L1000 signature similarity matrix from SEP-L1000 
+          and the drug-drug literature co-mentions matrix from DrugRIF. The results table can be viewed by selecting the corresponding tab. The prediction 
           tables list the top 200 drugs most associated with the drug set from the associated drug table on the left.
           
           <br><br>
@@ -123,9 +124,9 @@
         <br>
         <div>
           The drug set augmentation page lets users upload a set of drugs. DrugShot can compute the group similarity of the drug set to all drugs in the given drug-drug similarity matrix.
-          DrugShot will identify the top 200 drugs ranked by their similarity score. In the case of the drug co-expression matrix, the average cosine similarity between the input drug set
-          to the drugs in the co-expression matrix is calculated. In the case of co-occurrence matrix, the average PubMedID co-mentions between the input drug set and drugs in the co-occurence
-          matrix are calculated.
+          DrugShot will identify the top 200 drugs ranked by their similarity score. In the case of the drug signature similarity matrix, the average cosine similarity between the input drug set
+          to the drugs in the signature similarity matrix is calculated. In the case of the literature co-mentions matrix, the average PubMedID co-mentions between the input drug set and drugs in the
+          literature co-mentions matrix are calculated.
           <br><br>
           The novelty of drugs is also reported here by returning the number of publications per drug. Drugs are grouped into four quantiles of novelty based on the 
           publication count of drugs in DrugRIF. A drug is rare if it has 7 or fewer publications. A drug is uncommon when it has between 8 and 25 publications.
