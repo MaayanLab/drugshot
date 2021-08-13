@@ -255,7 +255,6 @@
 
                 var topDrug = Object.keys(drugcount)[0];
                 refreshPlot(topDrug);
-                //highlightDrug(topDrug);
 
                 $("#tab-plots").fadeIn();
 
@@ -430,11 +429,11 @@
             .text("y: " + Math.round(d[1] * 1000) / 1000);
 
         // Calculate the width of the box based on the widest text element  
-        var text_element = d3.select("#t" + d[2]);
+        var text_element = d3.select("#t" + CSS.escape(d[2]));
         var textWidth = text_element.node().getComputedTextLength()
 
         text_element.attr("x", function () { return xScale(d[0]) - (textWidth) / 2; })
-        var box = d3.select("#b" + d[2]);
+        var box = d3.select("#b" + CSS.escape(d[2]));
         box.attr("x", function () { return xScale(d[0]) - (textWidth + 10) / 2 - 15; })
             .attr("y", function () { return yScale(d[1]) - 38 - 40; })
             .attr("width", textWidth + 40)
@@ -468,21 +467,6 @@
 
             addDrugBox(d);
         }
-    }
-
-    /* Drug Detail plot */
-    function highlightDrug(drug) {
-        drug = String(drug);
-        if (nodeClicked == false) {
-        }
-        d3.select("#" + drug)
-            .transition()
-            .duration(200)
-            .attr({
-                fill: "#d63fd6",
-                r: radius * 3,
-                opacity: .8
-            });
     }
 
     function refreshPlot(topDrug) {
