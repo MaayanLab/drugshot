@@ -378,7 +378,6 @@
 
     function addDrugBox(d) {
         $(".tmpInfo").remove();
-        d[2] = d[2].replace(/[)(,\s]/g,''); // current hack for dealing w/ drug names
 
         svg.append("rect")
             .attr("id", "b" + d[2])
@@ -636,7 +635,7 @@
         for (var i = 0; i < rows.length; i++) {
             var drug = String(rows[i][1]);
             var pubcount = rows[i][2].split("blank\">")[1].split("<")[0];
-            combinedScore.push([drug, parseFloat(pubcount) * parseFloat(rows[i][3])]);
+            combinedScore.push([drug, parseFloat(pubcount)]);
 
         }
 
