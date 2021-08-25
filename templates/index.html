@@ -635,7 +635,7 @@
         for (var i = 0; i < rows.length; i++) {
             var drug = String(rows[i][1]);
             var pubcount = rows[i][2].split("blank\">")[1].split("<")[0];
-            combinedScore.push([drug, parseFloat(pubcount)]);
+            combinedScore.push([drug, parseFloat(pubcount) * parseFloat(rows[i][3])]);
 
         }
 
