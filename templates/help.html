@@ -11,7 +11,7 @@
         biomedical terms such as genes or diseases. DrugShot is a web-based server application that
         enables users to enter any biomedical search term into a simple input form to receive ranked
         lists of drugs and small molecules based on their relevance to the search term. To produce ranked
-        lists of drugs, DrugShot cross-references returned PubMed IDs with DrugRIF, a curated resource of
+        lists of drugs, DrugShot cross-references returned PubMed IDs with DrugRIF or AutoRIF, curated resources of
         drug-PMID associations, to produce an associated compound list where each compound is ranked
         according to total co-mentions with the search term from shared PubMed IDs. Additionally, lists of
         compounds predicted to be associated with the search terms are generated based on co-occurrence in
@@ -27,7 +27,7 @@
           DrugShot is a search engine that accepts any search term to return a list of small molecules that are mostly associated with the search terms. 
           It can be used to identify novel associations between small molecules and biological mechanisms and processes. A free text search is redirected 
           to a PubMed search via the NCBI E-utilities API for retrieving publications that match the search terms. The resulting list of publications 
-          is cross-referenced with DrugRIF to convert PMIDs to lists of small molecules. DrugRIF enlists associations between publications 
+          is cross-referenced with DrugRIF or AutoRIF to convert PMIDs to lists of small molecules. DrugRIF and AutoRIF enlist associations between publications 
           and small molecules. DrugShot returns the list of small molecules ranked by their frequency of mentions within the publications returned by the search terms. 
           In addition, the returned small molecules from the initial query are supplanted with additional small molecules based on literature co-mentions and 
           L1000 signature similarity.
@@ -73,7 +73,7 @@
         
         <p>
           <b>Drug-drug Literature Co-mentions Matrices</b><br>
-          The AutoRIF and DrugRIF drug-drug literature co-mentions matrices contains pairwise drug-drug similarity based on the co-occurrence counts of drugs in each respective association file. 
+          The AutoRIF and DrugRIF drug-drug literature co-mentions matrices contain pairwise drug-drug similarity based on the co-occurrence counts of drugs in each respective association file. 
           The matrices contains the counts of how often two drugs co-occur in the same query list. 
         </p>
         <br>
