@@ -11,7 +11,17 @@
   $(document).ready(function () {
     // drugrif/coexpression
     var druglist = getUrlParameter('druglist');
+    var riftype = getUrlParameter('rif');
     var similarity = getUrlParameter('similarity');
+
+    if (riftype) {
+      if (riftype == "autorif") {
+        $("#databasemode").prop('checked', true);
+      }
+      else {
+        $("#databasemode").prop('checked', false);
+      }
+    }
 
     if (similarity) {
       $("#simselect select").val(similarity);
@@ -127,10 +137,18 @@
     fullname = $("#simselect option:selected").html();
     similarity = $("#simselect option:selected").val();
 
+    rifmode = "autorif";
+    if ($("#databasemode").is(":checked")) {
+      rifmode = "autorif";
+    }
+    else {
+      rifmode = "drugrif";
+    }
+
     $("#predictionresult").html("<div class=\"loading-tab\" style=\"display: none\"><div class=\"loader\"></div><h3 class=\"loading\"> Loading...</h3></div>");
     $("#predictionresult .loading-tab").show();
 
-    var payload = { "drugs": drugs.split(",")};
+    var payload = { "drugs": drugs.split(","), "rif": rifmode};
     console.log(payload)
 
     var xhr = new XMLHttpRequest();
@@ -140,6 +158,11 @@
 
       if (xhr.readyState === 4 && xhr.status === 200) {
         var data = JSON.parse(xhr.responseText);
+
+        riftext = "AutoRIF";
+        if (rifmode != "autorif") {
+          riftext = "DrugRIF"
+        }
 
         $("#d3content").show();
         drawD3(data);
@@ -155,6 +178,7 @@
         tabletext += "<tbody>\n";
 
         for (var i = 0; i < data.drugcount.length; i++) {
+          if(rifmode == "autorif") {
             if (data.drugcount[i]["publications"] < 10) {
               quantile = "rare"
             }
@@ -167,6 +191,7 @@
             else {
               quantile = "very common"
             }
+          }
           tabletext += "<tr><td>" + i + "</td><td>" + data.drugcount[i]["drug"] + "</td><td>" + data.drugcount[i]["publications"] + "</td><td>" + quantile + "</td></tr>";
         }
 
@@ -364,11 +389,25 @@
             <p>Similarity:</p>
 
             <select id="simselect" class="selectpicker" data-style="btn-primary" data-width="250px">
-              <option value="drugrif_cooccur">Literature co-mentions</option>
               <option selected value="L1000_coexpression">L1000 signature similarity</option>
+              <option value="autorif_cooccur">AutoRIF Literature co-mentions</option>
+              <option value="drugrif_cooccur">DrugRIF Literature co-mentions</option>
             </select>
 
             <br><br>
+            <span class="slider-left">
+              <a href="javascript:void(0);" data-toggle="popover" data-placement="top" data-trigger="focus"
+                title="DrugRIF"
+                data-content="Search PubMed using the manually-collected DrugRIF drug-term associations.">
+                <i class="far fa-question-circle"></i></a> DrugRIF
+            </span> <label class="switch">
+              <input type="checkbox" id="databasemode" checked> <span class="slider-switch"></span>
+            </label> <span class="slider-right">AutoRIF <a href="javascript:void(0);" data-toggle="popover"
+                data-placement="top" data-trigger="focus" title="AutoRIF"
+                data-content="AutoRIF contains automatically colllected drug-term associations from the NCBI Eutilities API."><i
+                  class="far fa-question-circle"></i></a>
+            </span><br>
+
             <button type="submit" class="sublist submit_btn" onclick="submitQuery();">
               <p>Submit</p>
             </button>
@@ -381,10 +420,13 @@
         most relevant to the submitted drug set. DrugShot prioritizes the additional drugs using drug-drug similarity
         matrices derived from a variety of resources
         (<a href="https://maayanlab.cloud/drugshot">DrugRIF</a> |
+        <a href="https://maayanlab.cloud/drugshot">AutoRIF</a> |
         <a href="https://maayanlab.net/SEP-L1000/" target="_blank">SEP-L1000</a>).
       </p>
 
-      <center></cennter><div id="d3content"></div></center>
+      <center>
+        <div id="d3content"></div>
+      </center>
 
       <div id="searchpara"></div>
 

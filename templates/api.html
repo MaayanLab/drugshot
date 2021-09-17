@@ -94,6 +94,10 @@ function scrollPage(location){
               <td>drug name</td>
             </tr>
             <tr>
+              <td><strong>rif</strong></td>
+              <td>drugrif or autorif</td>
+            </tr>
+            <tr>
               <td><strong>term</strong></td>
               <td>search term</td>
             </tr>
@@ -106,7 +110,7 @@ function scrollPage(location){
 import requests
 
 DRUGSHOT_URL = 'https://maayanlab.cloud/drugshot/api/drugpublications'
-payload = {"drug": "daunorubicin", "term": "alopecia"}
+payload = {"drug": "daunorubicin", "rif": "autorif", "term": "alopecia"}
 
 response = requests.post(DRUGSHOT_URL, json=payload)
 
@@ -191,7 +195,11 @@ print(data)
               <tr>
               <td><strong>term</strong></td>
               <td>search term</td>
-            </tr>
+              </tr>
+              <tr>
+                <td><strong>rif</strong></td>
+                <td>drugrif or autorif</td>
+                </tr>
           </tbody></table>
         </td>
       </tr>
@@ -201,7 +209,7 @@ print(data)
 import requests
 
 DRUGSHOT_URL = 'https://maayanlab.cloud/drugshot/api/search'
-payload = {"term": "alopecia"}
+payload = {"rif": "autorif", "term": "alopecia"}
 
 response = requests.post(DRUGSHOT_URL, json=payload)
 

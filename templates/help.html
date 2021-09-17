@@ -50,24 +50,31 @@
           Here we have a short introduction of the datasets that are being used by DrugShot. The data used by DrugShot are
         </p>
         <br>
+
+        <p>
+          <b>AutoRIF</b><br>
+          AutoRIF contains associations between small molecules and publications. AutoRIF is automatically generated, and it currently contains 7,992,745
+          associations. We constructed AutoRIF by querying the NCBI E-utilities API with drug names (each matched with a MeSH identifier) and collected the PMIDs for each query.
+        </p>
+
         <p>
           <b>DrugRIF</b><br>
-          DrugRIF contains associations between small molecules and publications. DrugRIF is automatically generated, and it currently contains 1,996,791
+          DrugRIF is an alternative file that contains associations between small molecules and publications. DrugRIF is automatically generated, and it currently contains 1,996,791
           associations. We constructed DrugRIF by querying PubMed with InChIKeys (each with an associated small molecule name) and collected the PMIDs for each query.
         </p>
         
         <p>
           <b>Drug-drug L1000 Signature Similarity Matrix from SEP-L1000</b><br>
-          The drug-drug signature similarity matrix used by DrugShot contains pairwise correlations between drug-induced gene expression profiles.
+          The drug-drug signature similarity matrix used by DrugShot contain pairwise correlations between drug-induced gene expression profiles.
           The correlations were calculated using cosine similarity between drug-induced gene expression signatures calculated using the Characteristic Direction method.
           This pairwise drug similarity matrix is used to transitively associate drug sets returned from the original DrugShot query with 
           their most correlated co-expressed drugs.
         </p>
         
         <p>
-          <b>Drug-drug Literature Co-mentions Matrix from DrugRIF</b><br>
-          The drug-drug literature co-mentions matrix contains pairwise drug-drug similarity based on the co-occurrence counts of drugs in publication abstracts. 
-          The matrix contains the counts of how often two drugs co-occur in the same query list. 
+          <b>Drug-drug Literature Co-mentions Matrices</b><br>
+          The AutoRIF and DrugRIF drug-drug literature co-mentions matrices contains pairwise drug-drug similarity based on the co-occurrence counts of drugs in each respective association file. 
+          The matrices contains the counts of how often two drugs co-occur in the same query list. 
         </p>
         <br>
         <hr>

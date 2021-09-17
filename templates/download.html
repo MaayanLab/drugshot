@@ -9,6 +9,18 @@
     
     <div class="container" style="padding: 20px; padding-left: 15px;">
       <hr>
+
+      <div style="height: 120px;">
+        <h3>AutoRIF</h3>
+        AutoRIF was built by querying the NCBI Eutilities API with all small molecules names from <a href="https://maayanlab.cloud/drugmonizome/">Drugmonizome</a> and <a href="https://maayanlab.net/SEP-L1000/">SEP-L1000</a> using the PUG-REST API. All PubMed IDs matching the small molecule query with associated publications are contained in this file. The file contains 7,992,745 small molecule associations to PubMed IDs.
+        <br><br>
+        <div style="font-size: 16px;">
+          <div style="float: left; width: 180px;"><a href="https://appyters.maayanlab.cloud/storage/DrugShot/DrugRIF.tsv.gz">DrugRIF</a></div>
+          <div style="float: left; margin-left: 30px;">33.4 MB</div>
+        </div>
+      </div>
+
+      <hr>
       
       <div style="height: 120px;">
         <h3>DrugRIF</h3>
@@ -16,7 +28,7 @@
         <br><br>
         <div style="font-size: 16px;">
           <div style="float: left; width: 180px;"><a href="https://appyters.maayanlab.cloud/storage/DrugShot/DrugRIF.tsv.gz">DrugRIF</a></div>
-          <div style="float: left; margin-left: 30px;">8.55 MB</div>
+          <div style="float: left; margin-left: 30px;">9 MB</div>
         </div>
       </div>
       
@@ -28,22 +40,34 @@
         <br><br>
         <div style="font-size: 16px;">
           <div style="float: left; width: 180px;"><a href="https://appyters.maayanlab.cloud/storage/DrugShot/L1000_coexpression.h5">Correlation matrix</a></div>
-          <div style="float: left; margin-left: 30px;">1.44 GB</div>
+          <div style="float: left; margin-left: 30px;">1.55 GB</div>
         </div>
       </div>
       
       <hr>
       
       <div style="height: 120px;">
-        <h3>Pairwise Drug Literature Co-mentions Matrix</h3>
-        Pairwise co-occurrence of PMIDs between drugs from DrugRIF.
+        <h3>AutoRIF Literature Co-mentions Matrix</h3>
+        <p>Pairwise co-occurrence of PMIDs between drugs from AutoRIF.</p>
         <br><br>
         <div style="font-size: 16px;">
-          <div style="float: left; width: 180px;"><a href="https://appyters.maayanlab.cloud/storage/DrugShot/drug_cooccur.h5">Co-occurrence matrix</a></div>
-          <div style="float: left; margin-left: 30px;">144.60 MB</div>
+          <div style="float: left; width: 180px;"><a href="https://appyters.maayanlab.cloud/storage/DrugShot/autorif_cooccur.h5">AutoRIF matrix</a></div>
+          <div style="float: left; margin-left: 30px;">162.9 MB</div>
         </div>
       </div>
       
+      <hr>
+
+      <div style="height: 120px;">
+        <h3>DrugRIF Literature Co-mentions Matrix</h3>
+        <p>Pairwise co-occurrence of PMIDs between drugs from DrugRIF.</p>
+        <br><br>
+        <div style="font-size: 16px;">
+          <div style="float: left; width: 180px;"><a href="https://appyters.maayanlab.cloud/storage/DrugShot/drugrif_cooccur.h5">DrugRIF matrix</a></div>
+          <div style="float: left; margin-left: 30px;">153.7 MB</div>
+        </div>
+      </div>
+
       <hr>
       
       Should you have any questions regarding the data please don't hesitate to <a href='mailto:eryk.kropiwnicki@icahn.mssm.edu?subject=DrugShot&cc=avi.maayan@mssm.edu'>contact us</a>.
