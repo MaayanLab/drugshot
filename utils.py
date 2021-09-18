@@ -41,19 +41,19 @@ def query_ncbi(searchterm, api_key, session):
         if i*pagestep > countMax:
             going = False
 
-        i = i+1
+        i += 1
 
     session[searchterm] = np.array(pmids).astype(int)
 
 def slice_matrix(matrix, query_colids):
     f = h5.File(f"similarity/{matrix}.h5", "r")
-    query_colids = set(query_colids)
+    query_colids = set([x.upper() for x in query_colids])
     colids = list(f["meta"]["colid"])
     try:
         colids = [x.decode("UTF-8") for x in colids]
     except:
         print("already good")
-    col_idx = [i for i, x in enumerate(colids) if x in query_colids]
+    col_idx = [i for i, x in enumerate(colids) if x.upper() in query_colids]
     values = pd.DataFrame(f["data"]["matrix"][:, col_idx], columns=np.array(colids)[col_idx], index=colids, dtype=float)
     f.close()
     for g in values.columns:
