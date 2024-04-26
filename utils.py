@@ -5,6 +5,8 @@ import os
 import urllib.request
 import re
 import requests
+from datetime import datetime, timedelta
+import concurrent.futures
 
 def get_s3_file(filename):
     if not os.path.exists('similarity'):
@@ -44,6 +46,37 @@ def query_ncbi(searchterm, api_key, session):
         i += 1
 
     session[searchterm] = np.array(pmids).astype(int)
+
+def query_geo(searchterm, api_key, session):
+    start_date = datetime(2000, 1, 1)
+    end_date = datetime(2022, 1, 1)
+    quarter = timedelta(days=365.25 / 4)
+    date_list = []
+    current_date = start_date
+    while current_date < end_date:
+        date_list.append(current_date.strftime('%Y/%m/%d'))
+        current_date += quarter
+    results = []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+        futures = [executor.submit(query_geo_date, searchterm, api_key, date_list[i], date_list[i + 1]) for i in range(len(date_list) - 1)]
+        for future in concurrent.futures.as_completed(futures):
+            results.extend(future.result())
+    
+    pmids = list(set(results))
+    session[searchterm] = np.array(pmids).astype(int)
+
+def query_geo_date(searchterm, api_key, mindate, maxdate):
+    pmids = []
+    url = ("https://eutils.ncbi.nlm.nih.gov"+
+        "/entrez/eutils/esearch.fcgi"+
+        "?db=pubmed&term="+searchterm+
+        "&mindate="+str(mindate)+
+        "&maxdate="+str(maxdate)+
+        "&retmax=10000"+
+        "&api_key="+api_key)
+    page = requests.get(url).text
+    pmids = pmids + re.findall(r'Id>(.*?)<', page)
+    return pmids
 
 def slice_matrix(matrix, query_colids):
     f = h5.File(f"similarity/{matrix}.h5", "r")

@@ -15,7 +15,7 @@ from flask import Flask, request, jsonify, session, send_file, redirect, render_
 from flask_cors import CORS
 from flask_session import Session 
 
-from utils import get_s3_file, query_ncbi, slice_matrix, associate_drugs
+from utils import get_s3_file, query_geo, slice_matrix, associate_drugs
 
 base_name = os.environ.get("BASE_NAME", '/drugshot')
 api_key = os.environ.get('API_KEY', 'NA')
@@ -69,8 +69,8 @@ def search():
     stime = time.time()
 
     if searchterm not in session:
-        query_ncbi(searchterm, api_key, session)
-
+        query_geo(searchterm, api_key, session)
+    
     if rif == "drugrif":
         associated_drug_counts = drugrif.loc[set(drugrif.index).intersection(set(session[searchterm]))]
         total_counts = drugrif_counts
