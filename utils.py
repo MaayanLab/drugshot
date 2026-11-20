@@ -8,11 +8,11 @@ import requests
 from datetime import datetime, timedelta
 import concurrent.futures
 
-def get_s3_file(filename):
+def get_s3_file(storage_url, filename):
     if not os.path.exists('similarity'):
         os.makedirs('similarity')
     if filename != 'NA' and not os.path.isfile(f"similarity/{filename}.h5"):
-        url = f'https://appyters.maayanlab.cloud/storage/DrugShot/{filename}.h5'
+        url = f'{storage_url}/{filename}.h5'
         urllib.request.urlretrieve(url, f'similarity/{filename}.h5')
 
 

@@ -19,6 +19,7 @@ from utils import get_s3_file, query_geo, slice_matrix, associate_drugs
 
 base_name = os.environ.get("BASE_NAME", '/drugshot')
 api_key = os.environ.get('API_KEY', 'NA')
+storage_url = os.environ.get('STORAGE_URL', 'https://appyters.maayanlab.cloud/storage/DrugShot')
 
 app = Flask(__name__, static_url_path=f"{base_name}/static")
 app.config["SESSION_PERMANENT"] = False
@@ -29,13 +30,13 @@ print("server started")
 
 print("init RIF files")
 
-drugrif = pd.read_csv('https://appyters.maayanlab.cloud/storage/DrugShot/DrugRIF.tsv.gz',
+drugrif = pd.read_csv(f'{storage_url}/DrugRIF.tsv.gz',
                       sep = '\t',
                       usecols = ['name','PMID']).set_index('PMID')
 
 drugrif_counts = dict(Counter(drugrif['name']))
 
-autorif = pd.read_csv('https://appyters.maayanlab.cloud/storage/DrugShot/AutoRIF.tsv.gz',
+autorif = pd.read_csv(f'{storage_url}/AutoRIF.tsv.gz',
                       sep = '\t',
                       usecols = ['name','PMID']).set_index('PMID')
 
@@ -43,9 +44,9 @@ autorif_counts = dict(Counter(autorif['name']))
 
 print("init similarities")
 
-get_s3_file("drugrif_cooccur")
-get_s3_file("autorif_cooccur")
-get_s3_file("L1000_coexpression")
+get_s3_file(storage_url, "drugrif_cooccur")
+get_s3_file(storage_url, "autorif_cooccur")
+get_s3_file(storage_url, "L1000_coexpression")
 
 @app.route(base_name+'/')
 def index():
