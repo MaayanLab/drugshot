@@ -72,11 +72,16 @@ def search():
         query_geo(searchterm, api_key, session)
     
     if rif == "drugrif":
-        associated_drug_counts = drugrif.loc[set(drugrif.index).intersection(set(session[searchterm]))]
+        rif_file = drugrif
         total_counts = drugrif_counts
     else:
-        associated_drug_counts = autorif.loc[set(autorif.index).intersection(set(session[searchterm]))]
+        rif_file = autorif
         total_counts = autorif_counts
+
+    # pandas 2.0+ no longer accepts sets as indexers. Index.intersection also
+    # avoids constructing two temporary sets and returns a valid Index for loc.
+    matching_pmids = rif_file.index.intersection(session[searchterm])
+    associated_drug_counts = rif_file.loc[matching_pmids]
 
     drug_counts = dict(Counter(associated_drug_counts.iloc[:,0]))
     drug_count = {}

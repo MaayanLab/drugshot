@@ -1,6 +1,16 @@
-venv/
+.git
+.github
+.agents
+.codex
+.aws
 .DS_Store
 .ipynb_checkpoints/
 __pycache__/
+*.py[cod]
+*.ipynb
+.env
+.env.*
+.venv/
+venv/
 flask_session/
 similarity/

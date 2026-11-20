@@ -1,8 +1,9 @@
-flask
+Flask
 flask-cors
 Flask-Session
-pytz
 h5py
-pandas
 numpy
+pandas
+python-dateutil
+pytz
 requests
